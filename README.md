@@ -1,6 +1,6 @@
 # Resume and Cover Letter Tailor
 
-🔗 **Live App:** [Coming soon after deployment]
+🔗 **Live App:** [Resume and Cover Letter Tailor](https://resume-cover-letter-tailor.streamlit.app/)
 
 An AI-powered tool that helps job seekers tailor a resume and cover letter to a
 specific job posting. Upload your CV, paste a job description, answer a few targeted
