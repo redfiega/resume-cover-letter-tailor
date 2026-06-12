@@ -1,0 +1,24 @@
+# Parse CV Prompt
+
+## Instructions for Use
+Replace {CV_TEXT} with the extracted text from the uploaded CV.
+
+## Prompt
+
+Read the following CV text and organize it into clearly labeled sections.
+
+**CV Text:**
+{CV_TEXT}
+
+Return the content organized into these sections (include only sections present):
+- Contact Information
+- Education
+- Work Experience
+- Skills
+- Publications
+- Awards and Honors
+- Service and Leadership
+- Grants and Funding
+- Other
+
+Preserve all content exactly as written. Do not summarize or shorten anything.
