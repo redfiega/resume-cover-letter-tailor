@@ -19,8 +19,8 @@ STYLES = {
         "header_color": RGBColor(0, 0, 0),
         "header_bold": True,
         "header_underline": False,
-        "accent_color": RGBColor(0, 0, 0),
         "background": False,
+        "background_hex": None,
         "margin": 1.0,
         "font": "Times New Roman"
     },
@@ -32,8 +32,8 @@ STYLES = {
         "header_color": RGBColor(0, 101, 164),
         "header_bold": True,
         "header_underline": False,
-        "accent_color": RGBColor(0, 101, 164),
         "background": False,
+        "background_hex": None,
         "margin": 0.75,
         "font": "Calibri"
     },
@@ -43,6 +43,8 @@ STYLES = {
         "body_size": 12,
         "name_color": RGBColor(255, 255, 255),
         "header_color": RGBColor(255, 255, 255),
+        "header_bold": True,
+        "header_underline": False,
         "background": True,
         "background_hex": "1F497D",
         "margin": 0.75,
@@ -56,8 +58,8 @@ STYLES = {
         "header_color": RGBColor(0, 0, 0),
         "header_bold": True,
         "header_underline": True,
-        "accent_color": RGBColor(0, 0, 0),
         "background": False,
+        "background_hex": None,
         "margin": 1.0,
         "font": "Georgia"
     }
@@ -100,6 +102,30 @@ def add_shading(paragraph, hex_color: str):
     pPr.append(shd)
 
 
+def add_inline_text(paragraph, text: str, bold: bool, font_size: int,
+                    font_name: str, color: RGBColor = None):
+    """Add a text run to a paragraph with specified formatting."""
+    run = paragraph.add_run(text)
+    run.bold = bold
+    run.font.size = Pt(font_size)
+    run.font.name = font_name
+    if color:
+        run.font.color.rgb = color
+    return run
+
+
+def parse_inline_markdown(paragraph, line: str, font_size: int,
+                          font_name: str, color: RGBColor = None):
+    """Parse a line with inline **bold** markdown and add runs to paragraph."""
+    parts = line.split("**")
+    is_bold = False
+    for part in parts:
+        if part:
+            add_inline_text(paragraph, part, is_bold, font_size,
+                            font_name, color)
+        is_bold = not is_bold
+
+
 # ─────────────────────────────────────────
 # RESUME BUILDER
 # ─────────────────────────────────────────
@@ -123,9 +149,9 @@ def build_resume_document(content: str, output_path: str,
             # Name / main title
             paragraph = doc.add_paragraph()
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            if style["background"]:
-                if style["background"]:
-                    add_shading(paragraph, style.get("background_hex", "1F497D"))
+            if style["background"] and style["background_hex"]:
+                add_shading(paragraph, style["background_hex"])
+            run = paragraph.add_run(line.replace("# ", ""))
             run.bold = True
             run.font.size = Pt(style["name_size"])
             run.font.color.rgb = style["name_color"]
@@ -134,8 +160,8 @@ def build_resume_document(content: str, output_path: str,
         elif line.startswith("## "):
             # Section header
             paragraph = doc.add_paragraph()
-            if style["background"]:
-                add_shading(paragraph, style.get("background_hex", "1F497D"))
+            if style["background"] and style["background_hex"]:
+                add_shading(paragraph, style["background_hex"])
             run = paragraph.add_run(line.replace("## ", "").upper())
             run.bold = style["header_bold"]
             run.underline = style["header_underline"]
@@ -146,14 +172,16 @@ def build_resume_document(content: str, output_path: str,
                 add_horizontal_line(paragraph)
 
         elif line.startswith("- ") or line.startswith("* "):
-            # Bullet point
+            # Bullet point — handle inline bold
             paragraph = doc.add_paragraph(style="List Bullet")
-            run = paragraph.add_run(line[2:])
-            run.font.size = Pt(style["body_size"])
-            run.font.name = style["font"]
+            parse_inline_markdown(
+                paragraph, line[2:],
+                style["body_size"], style["font"]
+            )
 
-        elif line.startswith("**") and line.endswith("**"):
-            # Bold text (job titles, company names)
+        elif line.startswith("**") and line.endswith("**") and \
+                line.count("**") == 2:
+            # Fully bold line (job titles, company names)
             paragraph = doc.add_paragraph()
             run = paragraph.add_run(line.replace("**", ""))
             run.bold = True
@@ -161,17 +189,12 @@ def build_resume_document(content: str, output_path: str,
             run.font.name = style["font"]
 
         else:
-            # Regular body text — handle inline bold (**text**)
+            # Regular body text — handle inline bold
             paragraph = doc.add_paragraph()
-            parts = line.split("**")
-            is_bold = False
-            for part in parts:
-                if part:
-                    run = paragraph.add_run(part)
-                    run.bold = is_bold
-                    run.font.size = Pt(style["body_size"])
-                    run.font.name = style["font"]
-                is_bold = not is_bold
+            parse_inline_markdown(
+                paragraph, line,
+                style["body_size"], style["font"]
+            )
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     doc.save(output_path)
@@ -197,14 +220,16 @@ def build_cover_letter_document(content: str, output_path: str,
         if not para_text:
             continue
 
-        para_text = para_text.replace("**", "")
+        # Remove markdown headers
         para_text = para_text.replace("## ", "")
         para_text = para_text.replace("# ", "")
 
         paragraph = doc.add_paragraph()
-        run = paragraph.add_run(para_text)
-        run.font.size = Pt(12)
-        run.font.name = style["font"]
+        # Handle inline bold in cover letter paragraphs
+        parse_inline_markdown(
+            paragraph, para_text,
+            11, style["font"]
+        )
         paragraph.space_after = Pt(12)
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
