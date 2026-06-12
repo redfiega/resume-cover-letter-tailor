@@ -1,0 +1,43 @@
+# Analyze Job Posting Prompt
+
+## Instructions for Use
+Replace {JOB_POSTING} with the actual job posting text.
+
+## Prompt
+
+Analyze the following job posting and extract all relevant information to guide
+resume and cover letter tailoring.
+
+**Job Posting:**
+{JOB_POSTING}
+
+Return your analysis in this exact format:
+
+---
+
+**Job Title:** [title]
+**Organization:** [organization name]
+**Industry:** [industry/sector]
+**Tone:** [formal/conversational/technical/mission-driven/etc.]
+
+**Required Qualifications:**
+- [requirement]
+- [requirement]
+
+**Preferred Qualifications:**
+- [qualification]
+- [qualification]
+
+**Key Skills and Tools:**
+- [skill/tool]
+- [skill/tool]
+
+**Keywords to Mirror:**
+- [keyword or phrase from posting]
+- [keyword or phrase from posting]
+
+**Potential Gaps to Address:**
+- [gap or area where clarifying questions may help]
+
+**Notes for Writers:**
+[Any additional context about tone, culture, or emphasis that should shape the documents]
