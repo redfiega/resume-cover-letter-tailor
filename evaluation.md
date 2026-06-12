@@ -104,4 +104,9 @@ Documents below any threshold are flagged for revision with specific feedback.
 | 2026-06-11 | Path 2 Evaluate — Consistency Check (both pasted) | Consistency | 1 | 1 | 3 | — | 1 | Fail|
 | 2026-06-11 | Path 2 Evaluate — Strong Resume vs Tech Posting (text) | Resume | 5 | 5 | 5 | — | 5 | Pass |
 | 2026-06-11 | Path 2 Evaluate — Strong Healthcare CL vs Tech Posting (text) | Cover Letter | 1 | 1 | 4 | — | 2 | Fail |
+| 2026-06-11 | Path 1 Generate — Career Changer vs Nonprofit Posting | Resume | 5 | 4 | 5 | 4 | 5 | Pass |
+| 2026-06-11 | Path 1 Generate — Career Changer vs Nonprofit Posting | Cover Letter | 5 | 5 | 5 | 4 | 5 | Pass |
+| 2026-06-11 | Path 2 Evaluate — Strong Tech Resume (file upload) | Resume | 5 | 5 | 5 | 4 | 5 | Pass |
+| 2026-06-11 | Path 2 Evaluate — Strong Healthcare CL vs Tech Posting (file upload) | Cover Letter | 1 | 1 | 4 | 4 | 2 | Fail |
+| 2026-06-11 | Path 2 Evaluate — Consistency Check (mismatched pair) | Consistency | 1 | 1 | 3 | N/A | 1 | Fail |
 
