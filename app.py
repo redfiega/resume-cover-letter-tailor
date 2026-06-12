@@ -220,8 +220,20 @@ if st.session_state.get("step") in ["review", "revision"]:
         st.subheader("📋 Your Tailored Resume")
         st.markdown(st.session_state["resume_content"])
 
+st.markdown("""
+            <div style="
+                border: 2px solid #0065A4;
+                border-radius: 8px;
+                padding: 12px;
+                margin: 10px 0;
+                background-color: #f0f7ff;">
+                <strong>💬 Provide Feedback on Your Resume</strong><br>
+                <em>Use the box below to request changes to content or formatting.</em>
+            </div>
+        """, unsafe_allow_html=True)
+
         resume_feedback = st.text_area(
-            "Feedback for resume (optional):",
+            "What would you like to change?",
             placeholder="Example: Make the summary shorter. "
                         "Move education to the top. "
                         "Add more emphasis on leadership experience.",
@@ -247,14 +259,20 @@ if st.session_state.get("step") in ["review", "revision"]:
                     except Exception as e:
                         st.error(f"Something went wrong: {e}")
 
-    # Display cover letter
-    if st.session_state.get("generate_cover_letter") and \
-            "cover_letter_content" in st.session_state:
-        st.subheader("✉️ Your Tailored Cover Letter")
-        st.markdown(st.session_state["cover_letter_content"])
+st.markdown("""
+            <div style="
+                border: 2px solid #0065A4;
+                border-radius: 8px;
+                padding: 12px;
+                margin: 10px 0;
+                background-color: #f0f7ff;">
+                <strong>💬 Provide Feedback on Your Cover Letter</strong><br>
+                <em>Use the box below to request changes to content or formatting.</em>
+            </div>
+        """, unsafe_allow_html=True)
 
         cl_feedback = st.text_area(
-            "Feedback for cover letter (optional):",
+            "What would you like to change?",
             placeholder="Example: Make the opening more engaging. "
                         "Add a specific mention of their research program. "
                         "Shorten the second paragraph.",
