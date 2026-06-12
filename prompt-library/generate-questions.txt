@@ -1,0 +1,30 @@
+# Generate Questions Prompt
+
+## Instructions for Use
+Replace {CV_CONTENT} and {JOB_ANALYSIS} with actual content.
+
+## Prompt
+
+Based on the CV and job analysis below, generate 3-5 targeted clarifying questions
+that will help tailor the resume and cover letter.
+
+**CV Content:**
+{CV_CONTENT}
+
+**Job Analysis:**
+{JOB_ANALYSIS}
+
+Generate questions that address real gaps between the CV and the job requirements.
+Do not ask about information already clearly present in the CV.
+
+Return in this format:
+
+---
+
+**Question 1:** [question]
+*Why this matters:* [brief explanation]
+
+**Question 2:** [question]
+*Why this matters:* [brief explanation]
+
+[Continue for all questions]
