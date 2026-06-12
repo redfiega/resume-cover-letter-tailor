@@ -76,14 +76,26 @@ Documents below any threshold are flagged for revision with specific feedback.
 
 | File | Description | Expected Result |
 |------|-------------|----------------|
-| synthetic-data/cv-academic.md | Sample academic CV | Parses correctly into structured sections |
-| synthetic-data/job-posting-university.md | University admin posting | Key requirements extracted correctly |
-| synthetic-data/job-posting-industry.md | Industry role posting | Tone shift detected; keywords extracted |
+| synthetic-data/cv-academic.md | Sample academic CV (Dr. Alexandra Chen) | Parses correctly into all sections including teaching, publications, grants, and service |
+| synthetic-data/job-posting-university.md | University Director of Curriculum posting | Extracts leadership, curriculum design, student success, and data analysis as key requirements |
+| synthetic-data/job-posting-industry.md | Corporate L&D Specialist posting | Detects tone shift from academic to corporate; flags keywords like ROI, stakeholder, agile |
 
----
+## 5. UI and Workflow Test Cases
 
-## 5. Evaluation Results Log
+| Feature | Test | Expected Result |
+|---------|------|----------------|
+| CV Upload | Upload PDF and Word versions | Both parse correctly |
+| Job Posting Analysis | Paste university posting | Key requirements extracted |
+| Questions | Complete question flow | Questions appear one at a time with progress bar |
+| Style Selector | Select each of four styles | Preview updates correctly for each style |
+| Feedback Boxes | Scroll to feedback section | Blue bordered boxes clearly visible |
+| Resume Revision | Submit feedback and revise | Changes applied accurately |
+| Cover Letter Revision | Submit feedback and revise | Changes applied accurately |
+| Download | Download resume in each style | Word document opens correctly with correct formatting |
+| Start Over | Click Start Over button | All session state cleared, app resets |
 
-| Date | Document Type | Keyword | Relevance | Tone | Visual | Complete | Pass/Fail |
-|------|--------------|---------|-----------|------|--------|----------|-----------|
-| — | — | — | — | — | — | — | — |
+## 6. Evaluation Results Log
+
+| Date | Test | Document Type | Keyword | Relevance | Tone | Visual | Complete | Pass/Fail |
+|------|------|--------------|---------|-----------|------|--------|----------|-----------|
+| — | — | — | — | — | — | — | — | — |
