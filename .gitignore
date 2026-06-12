@@ -1,0 +1,28 @@
+# Environment variables — NEVER commit this file
+.env
+
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated output files
+outputs/resumes/*.docx
+outputs/cover-letters/*.docx
+
+# VS Code settings
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Streamlit cache
+.streamlit/
+
+# Uploaded files (privacy protection)
+uploads/
