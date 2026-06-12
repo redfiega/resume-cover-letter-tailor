@@ -163,6 +163,41 @@ If NEEDS REVISION, list specific required changes.
     )
     return message.content[0].text
 
+def review_document_no_visual(document_content: str, job_analysis: str,
+                               document_type: str) -> str:
+    """Review a document but skip Visual Structure scoring.
+    Used when document is provided as pasted text rather than a file."""
+    domain_primer = load_domain_primer()
+    rubric = load_evaluation_rubric()
+
+    message = client.messages.create(
+        model=OPUS,
+        max_tokens=1500,
+        system=(f"You are a senior hiring manager reviewing application documents. "
+                f"Here is your domain knowledge:\n\n{domain_primer}\n\n"
+                f"Here is your scoring rubric:\n\n{rubric}"),
+        messages=[
+            {"role": "user", "content": f"""
+Review this {document_type} against the job analysis below.
+IMPORTANT: Do NOT score Visual Structure. The document was provided as plain
+text so visual formatting cannot be assessed. Mark Visual Structure as
+"Not evaluated — document provided as plain text" and exclude it from
+the overall verdict calculation.
+
+JOB ANALYSIS:
+{job_analysis}
+
+{document_type.upper()} TO REVIEW:
+{document_content}
+
+Score each dimension 1-5 except Visual Structure. Give an overall verdict
+of APPROVED or NEEDS REVISION based only on the four scoreable dimensions.
+If NEEDS REVISION, list specific required changes.
+"""}
+        ]
+    )
+    return message.content[0].text
+
 
 def revise_document(current_content: str, user_feedback: str,
                     job_analysis: str) -> str:

@@ -14,7 +14,7 @@ STYLES = {
     "Classic": {
         "name_size": 18,
         "header_size": 11,
-        "body_size": 10,
+        "body_size": 12,
         "name_color": RGBColor(0, 0, 0),
         "header_color": RGBColor(0, 0, 0),
         "header_bold": True,
@@ -27,7 +27,7 @@ STYLES = {
     "Modern": {
         "name_size": 20,
         "header_size": 11,
-        "body_size": 10,
+        "body_size": 12,
         "name_color": RGBColor(0, 101, 164),
         "header_color": RGBColor(0, 101, 164),
         "header_bold": True,
@@ -40,7 +40,7 @@ STYLES = {
     "Bold": {
         "name_size": 22,
         "header_size": 12,
-        "body_size": 10,
+        "body_size": 12,
         "name_color": RGBColor(255, 255, 255),
         "header_color": RGBColor(255, 255, 255),
         "header_bold": True,
@@ -53,7 +53,7 @@ STYLES = {
     "Academic": {
         "name_size": 16,
         "header_size": 11,
-        "body_size": 10,
+        "body_size": 12,
         "name_color": RGBColor(0, 0, 0),
         "header_color": RGBColor(0, 0, 0),
         "header_bold": True,
@@ -155,7 +155,7 @@ def build_resume_document(content: str, output_path: str,
             run.font.name = style["font"]
 
         elif line.startswith("**") and line.endswith("**"):
-            # Bold text
+            # Bold text (job titles, company names)
             paragraph = doc.add_paragraph()
             run = paragraph.add_run(line.replace("**", ""))
             run.bold = True
@@ -163,11 +163,17 @@ def build_resume_document(content: str, output_path: str,
             run.font.name = style["font"]
 
         else:
-            # Regular body text
+            # Regular body text — handle inline bold (**text**)
             paragraph = doc.add_paragraph()
-            run = paragraph.add_run(line)
-            run.font.size = Pt(style["body_size"])
-            run.font.name = style["font"]
+            parts = line.split("**")
+            is_bold = False
+            for part in parts:
+                if part:
+                    run = paragraph.add_run(part)
+                    run.bold = is_bold
+                    run.font.size = Pt(style["body_size"])
+                    run.font.name = style["font"]
+                is_bold = not is_bold
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     doc.save(output_path)
@@ -199,7 +205,7 @@ def build_cover_letter_document(content: str, output_path: str,
 
         paragraph = doc.add_paragraph()
         run = paragraph.add_run(para_text)
-        run.font.size = Pt(11)
+        run.font.size = Pt(12)
         run.font.name = style["font"]
         paragraph.space_after = Pt(12)
 

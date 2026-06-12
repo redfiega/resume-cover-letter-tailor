@@ -98,4 +98,7 @@ Documents below any threshold are flagged for revision with specific feedback.
 
 | Date | Test | Document Type | Keyword | Relevance | Tone | Visual | Complete | Pass/Fail |
 |------|------|--------------|---------|-----------|------|--------|----------|-----------|
-| — | — | — | — | — | — | — | — | — |
+| 2026-06-11 | Path 1 Generate — Tech Resume/Cover Letter | Resume | 5 | 5 | 5 | 4 | 5 | Pass |
+| 2026-06-11 | Path 1 Generate — Tech Resume/Cover Letter | Cover Letter | 5 | 5 | 5 | 4 | 5 | Pass |
+| 2026-06-11 | Path 2 Evaluate — Weak Resume vs Tech Posting (text input) | Resume | 1 | 1 | 2 | — | 2 | Fail |
+

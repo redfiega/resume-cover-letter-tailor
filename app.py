@@ -18,6 +18,7 @@ from agents import (
     write_resume,
     write_cover_letter,
     review_document,
+    review_document_no_visual,
     revise_document
 )
 from document_builder import (
@@ -33,6 +34,10 @@ st.set_page_config(
     page_icon="📄",
     layout="wide"
 )
+
+# Initialize session counter for widget key resets
+if "session_count" not in st.session_state:
+    st.session_state["session_count"] = 0
 
 # Custom CSS
 st.markdown("""
@@ -120,6 +125,8 @@ st.markdown("""
 # ─────────────────────────────────────────
 if st.session_state.get("path") is None:
 
+    sc = st.session_state.get("session_count", 0)
+
     st.markdown("""
         <div style="display: flex; gap: 8px; margin-bottom: 16px;
             align-items: center; flex-wrap: wrap;">
@@ -176,7 +183,7 @@ if st.session_state.get("path") is None:
         "How would you like to provide your CV or Resume?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
         horizontal=True,
-        key="cv_input_method"
+        key=f"cv_input_method_{sc}"
     )
 
     cv_text = ""
@@ -186,7 +193,7 @@ if st.session_state.get("path") is None:
         uploaded_cv = st.file_uploader(
             "Upload your CV or Resume (PDF or Word)",
             type=["pdf", "docx"],
-            key="cv_upload"
+            key=f"cv_upload_{sc}"
         )
         if uploaded_cv:
             with st.spinner("Reading your document..."):
@@ -202,7 +209,7 @@ if st.session_state.get("path") is None:
             "Paste your CV or Resume here:",
             placeholder="Paste the full text of your CV or Resume here...",
             height=200,
-            key="cv_paste"
+            key=f"cv_paste_{sc}"
         )
 
     # Cover letter input
@@ -211,7 +218,7 @@ if st.session_state.get("path") is None:
         "How would you like to provide your cover letter?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
         horizontal=True,
-        key="cl_input_method_home"
+        key=f"cl_input_method_home_{sc}"
     )
 
     cl_text = ""
@@ -220,7 +227,7 @@ if st.session_state.get("path") is None:
         uploaded_cl = st.file_uploader(
             "Upload your cover letter (PDF or Word)",
             type=["pdf", "docx"],
-            key="cl_upload_home"
+            key=f"cl_upload_home_{sc}"
         )
         if uploaded_cl:
             with st.spinner("Reading your cover letter..."):
@@ -235,7 +242,7 @@ if st.session_state.get("path") is None:
             "Paste your cover letter here:",
             placeholder="Paste the full text of your cover letter here...",
             height=150,
-            key="cl_paste_home"
+            key=f"cl_paste_home_{sc}"
         )
 
     # Job posting input
@@ -244,7 +251,7 @@ if st.session_state.get("path") is None:
         "Paste the job posting here:",
         placeholder="Copy and paste the full job description here...",
         height=200,
-        key="job_posting_input"
+        key=f"job_posting_input_{sc}"
     )
 
     # Path selection
@@ -258,7 +265,7 @@ if st.session_state.get("path") is None:
             "cover letter based on your CV and the job posting.",
             type="primary",
             use_container_width=True,
-            key="path1_button"
+            key=f"path1_button_{sc}"
         ):
             if not cv_text.strip():
                 st.warning("Please provide your CV or Resume before "
@@ -288,7 +295,7 @@ if st.session_state.get("path") is None:
             "Evaluate My Documents\n\nGet scored feedback on your existing "
             "resume and/or cover letter based on the job posting.",
             use_container_width=True,
-            key="path2_button"
+            key=f"path2_button_{sc}"
         ):
             if not job_posting.strip():
                 st.warning("Please paste a job posting before continuing.")
@@ -323,29 +330,24 @@ elif st.session_state.get("path") == "generate":
                     1 · Documents
                 </span>
                 <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    2 · Path
-                </span>
-                <span style="color: #aaa;">→</span>
                 <span style="background: #0065A4; color: white; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                    3 · Style
+                    2 · Style
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    4 · Questions
+                    3 · Questions
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    5 · Review
+                    4 · Review
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    6 · Download
+                    5 · Download
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -450,27 +452,22 @@ elif st.session_state.get("path") == "generate":
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    2 · Path
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    3 · Style
+                    2 · Style
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #0065A4; color: white; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                    4 · Questions
+                    3 · Questions
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    5 · Review
+                    4 · Review
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    6 · Download
+                    5 · Download
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -597,27 +594,22 @@ elif st.session_state.get("path") == "generate":
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    2 · Path
+                    2 · Style
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    3 · Style
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    4 · Questions
+                    3 · Questions
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #0065A4; color: white; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                    5 · Review
+                    4 · Review
                 </span>
                 <span style="color: #aaa;">→</span>
                 <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                     border-radius: 20px; font-size: 0.85rem;">
-                    6 · Download
+                    5 · Download
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -738,41 +730,6 @@ elif st.session_state.get("path") == "generate":
                 st.markdown(report)
 
         st.divider()
-        st.markdown("""
-            <div style="display: flex; gap: 8px; margin-bottom: 20px;
-                align-items: center; flex-wrap: wrap;">
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    1 · Documents
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    2 · Path
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    3 · Style
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    4 · Questions
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem;">
-                    5 · Review
-                </span>
-                <span style="color: #aaa;">→</span>
-                <span style="background: #0065A4; color: white; padding: 4px 14px;
-                    border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                    6 · Download
-                </span>
-            </div>
-        """, unsafe_allow_html=True)
-
         st.markdown("## Download Your Documents")
         st.caption("When you are happy with your documents, download them below.")
 
@@ -844,9 +801,10 @@ elif st.session_state.get("path") == "generate":
                             st.error(f"Something went wrong: {e}")
 
         st.divider()
-        if st.button("Start Over"):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
+        if st.button("Start Over", key="start_over_p1"):
+            count = st.session_state.get("session_count", 0) + 1
+            st.session_state.clear()
+            st.session_state["session_count"] = count
             st.rerun()
 
 # ─────────────────────────────────────────
@@ -868,20 +826,34 @@ elif st.session_state.get("path") == "evaluate":
                 results = {}
 
                 if cv_text.strip():
-                    resume_report = review_document(
-                        cv_text,
-                        st.session_state["job_analysis"],
-                        "Resume"
-                    )
+                    if cv_input_method == "Paste as text":
+                        resume_report = review_document_no_visual(
+                            cv_text,
+                            st.session_state["job_analysis"],
+                            "Resume"
+                        )
+                    else:
+                        resume_report = review_document(
+                            cv_text,
+                            st.session_state["job_analysis"],
+                            "Resume"
+                        )
                     results["resume_report"] = resume_report
                     results["cv_input_method"] = cv_input_method
 
                 if cl_text.strip():
-                    cl_report = review_document(
-                        cl_text,
-                        st.session_state["job_analysis"],
-                        "Cover Letter"
-                    )
+                    if cl_input_method == "Paste as text":
+                        cl_report = review_document_no_visual(
+                            cl_text,
+                            st.session_state["job_analysis"],
+                            "Cover Letter"
+                        )
+                    else:
+                        cl_report = review_document(
+                            cl_text,
+                            st.session_state["job_analysis"],
+                            "Cover Letter"
+                        )
                     results["cl_report"] = cl_report
                     results["cl_input_method"] = cl_input_method
 
@@ -925,15 +897,16 @@ elif st.session_state.get("path") == "evaluate":
             st.divider()
 
         if st.button("Switch to Generate New Documents", type="primary"):
-            for key in ["path", "path2_results"]:
-                if key in st.session_state:
-                    del st.session_state[key]
+            count = st.session_state.get("session_count", 0) + 1
+            st.session_state.clear()
+            st.session_state["session_count"] = count
             st.session_state["path"] = "generate"
             st.session_state["step"] = "style"
             st.rerun()
 
     st.divider()
-    if st.button("Start Over"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
+    if st.button("Start Over", key="start_over_p2"):
+        count = st.session_state.get("session_count", 0) + 1
+        st.session_state.clear()
+        st.session_state["session_count"] = count
         st.rerun()
