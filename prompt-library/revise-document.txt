@@ -1,0 +1,28 @@
+# Revise Document Prompt
+
+## Instructions for Use
+Replace all {PLACEHOLDERS} with actual content before sending.
+
+## Prompt
+
+Revise the following document based on the user's feedback.
+
+**Current Document:**
+{CURRENT_DOCUMENT}
+
+**User's Feedback:**
+{USER_FEEDBACK}
+
+**Job Analysis (for context):**
+{JOB_ANALYSIS}
+
+Requirements:
+- Apply every piece of feedback completely and accurately
+- Preserve all content not mentioned in the feedback
+- Do not introduce new errors while fixing requested changes
+- Maintain consistent formatting throughout
+- If the feedback requests content changes, rewrite naturally
+- If the feedback requests visual/structure changes, reorganize accordingly
+- The revised document must still be competitive for the target role
+
+Return the complete revised document, not just the changed sections.
