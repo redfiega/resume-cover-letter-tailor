@@ -1,0 +1,34 @@
+# Write Cover Letter Prompt
+
+## Instructions for Use
+Replace all {PLACEHOLDERS} with actual content before sending.
+
+## Prompt
+
+Write a tailored, compelling cover letter based on the information below.
+
+**CV Content:**
+{CV_CONTENT}
+
+**Job Analysis:**
+{JOB_ANALYSIS}
+
+**User's Answers to Clarifying Questions:**
+{USER_ANSWERS}
+
+**Resume Content (for reference — do not repeat, add new context):**
+{RESUME_CONTENT}
+
+Follow the cover letter structure from the domain primer:
+1. Opening paragraph — why this role, why this organization
+2. Body paragraph 1 — strongest relevant experience
+3. Body paragraph 2 — second strength or accomplishment
+4. Closing paragraph — enthusiasm and call to action
+5. Professional signature
+
+Requirements:
+- Sound like a real person, not a template
+- Name the organization and role specifically
+- Do not summarize the resume — add new context
+- Keep to one page
+- Match the tone identified in the job analysis
