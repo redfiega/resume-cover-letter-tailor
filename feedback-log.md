@@ -145,3 +145,44 @@
   Cover Letter report + Consistency check (if both provided)
 
 ---
+
+## Session 6 — Testing and Bug Fixes
+
+**Date:** 2026-06-11
+
+**Testing completed:**
+- Path 1 full workflow: CV parsing, job analysis, questions, generation,
+  revision, evaluation, and download
+- Path 2 full workflow: pasted text evaluation, file upload evaluation,
+  consistency check with matched and mismatched document pairs
+- Career changer test: finance to nonprofit reframing worked correctly
+- Weak document test: correctly scored low on all dimensions
+- Mismatched document test: consistency check correctly flagged different
+  candidates applying to different roles
+
+**Bugs found and fixed:**
+- Visual Structure was being scored for pasted text — fixed by adding
+  review_document_no_visual() function that skips Visual Structure
+- Consistency check was also scoring Visual Structure for pasted text —
+  fixed by checking either_pasted before selecting which review function to use
+- Evaluation report formatting was inconsistent between resume and cover
+  letter reports — fixed by adding explicit format instructions to both
+  review functions
+- Start Over button caused widget key conflict on return to homepage —
+  fixed by adding session counter that gives all widgets unique keys
+- Word document had literal ** symbols instead of bold text — fixed by
+  updating document_builder.py to parse inline Markdown bold formatting
+- Word document font was too small (10pt) — increased to 12pt for body
+  text in both resume and cover letter builders
+- Duplicate step indicator appeared between Review and Download sections —
+  removed the second indicator
+- Step indicator showed "Choose Path" and "Style" as separate steps —
+  simplified to 5 steps: Documents → Style → Questions → Review → Download
+
+**Current app status:**
+- Both paths fully tested and working correctly
+- Evaluation formatting consistent across all report types
+- Word document output clean and readable
+- Ready for deployment
+
+---
