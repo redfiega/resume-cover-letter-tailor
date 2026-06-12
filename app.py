@@ -137,27 +137,22 @@ if st.session_state.get("path") is None:
             <span style="color: #aaa;">→</span>
             <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                 border-radius: 20px; font-size: 0.85rem;">
-                2 · Choose Path
+                2 · Style
             </span>
             <span style="color: #aaa;">→</span>
             <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                 border-radius: 20px; font-size: 0.85rem;">
-                3 · Style
+                3 · Questions
             </span>
             <span style="color: #aaa;">→</span>
             <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                 border-radius: 20px; font-size: 0.85rem;">
-                4 · Questions
+                4 · Review
             </span>
             <span style="color: #aaa;">→</span>
             <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
                 border-radius: 20px; font-size: 0.85rem;">
-                5 · Review
-            </span>
-            <span style="color: #aaa;">→</span>
-            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
-                border-radius: 20px; font-size: 0.85rem;">
-                6 · Download
+                5 · Download
             </span>
         </div>
     """, unsafe_allow_html=True)
@@ -858,11 +853,26 @@ elif st.session_state.get("path") == "evaluate":
                     results["cl_input_method"] = cl_input_method
 
                 if cv_text.strip() and cl_text.strip():
-                    consistency = review_document(
-                        f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
-                        st.session_state["job_analysis"],
-                        "Resume and Cover Letter Consistency"
+                    both_pasted = (
+                        cv_input_method == "Paste as text" and
+                        cl_input_method == "Paste as text"
                     )
+                    either_pasted = (
+                        cv_input_method == "Paste as text" or
+                        cl_input_method == "Paste as text"
+                    )
+                    if either_pasted:
+                        consistency = review_document_no_visual(
+                            f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
+                            st.session_state["job_analysis"],
+                            "Resume and Cover Letter Consistency"
+                        )
+                    else:
+                        consistency = review_document(
+                            f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
+                            st.session_state["job_analysis"],
+                            "Resume and Cover Letter Consistency"
+                        )
                     results["consistency_report"] = consistency
 
                 st.session_state["path2_results"] = results

@@ -136,7 +136,8 @@ def write_cover_letter(cv_content: str, job_analysis: str,
 
 def review_document(document_content: str, job_analysis: str,
                     document_type: str) -> str:
-    """Review a document using the Reviewer agent (Opus)."""
+    """Review a document using the Reviewer agent (Opus).
+    Returns a consistently formatted evaluation report."""
     domain_primer = load_domain_primer()
     rubric = load_evaluation_rubric()
 
@@ -156,12 +157,33 @@ JOB ANALYSIS:
 {document_type.upper()} TO REVIEW:
 {document_content}
 
-Score each dimension 1-5 and give an overall verdict of APPROVED or NEEDS REVISION.
-If NEEDS REVISION, list specific required changes.
+You MUST return your evaluation in EXACTLY this format with no variations.
+Do not change the order of sections. Do not skip any section.
+
+**Summary**
+[2-3 sentence overall assessment]
+
+**Scorecard**
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Keyword Alignment | X/5 | [one line] |
+| Relevance | X/5 | [one line] |
+| Tone and Professionalism | X/5 | [one line] |
+| Visual Structure | X/5 | [one line] |
+| Completeness | X/5 | [one line] |
+
+**Overall Verdict:** APPROVED or NEEDS REVISION
+
+**Required Changes** (if NEEDS REVISION, otherwise write "None")
+1. [specific change]
+
+**Suggestions**
+- [optional improvement]
 """}
         ]
     )
     return message.content[0].text
+
 
 def review_document_no_visual(document_content: str, job_analysis: str,
                                document_type: str) -> str:
@@ -179,10 +201,8 @@ def review_document_no_visual(document_content: str, job_analysis: str,
         messages=[
             {"role": "user", "content": f"""
 Review this {document_type} against the job analysis below.
-IMPORTANT: Do NOT score Visual Structure. The document was provided as plain
-text so visual formatting cannot be assessed. Mark Visual Structure as
-"Not evaluated — document provided as plain text" and exclude it from
-the overall verdict calculation.
+IMPORTANT: Do NOT score Visual Structure — the document was provided as
+plain text so visual formatting cannot be assessed.
 
 JOB ANALYSIS:
 {job_analysis}
@@ -190,9 +210,29 @@ JOB ANALYSIS:
 {document_type.upper()} TO REVIEW:
 {document_content}
 
-Score each dimension 1-5 except Visual Structure. Give an overall verdict
-of APPROVED or NEEDS REVISION based only on the four scoreable dimensions.
-If NEEDS REVISION, list specific required changes.
+You MUST return your evaluation in EXACTLY this format with no variations.
+Do not change the order of sections. Do not skip any section.
+
+**Summary**
+[2-3 sentence overall assessment]
+
+**Scorecard**
+| Dimension | Score | Notes |
+|-----------|-------|-------|
+| Keyword Alignment | X/5 | [one line] |
+| Relevance | X/5 | [one line] |
+| Tone and Professionalism | X/5 | [one line] |
+| Visual Structure | Not evaluated | Document provided as plain text |
+| Completeness | X/5 | [one line] |
+
+**Overall Verdict:** APPROVED or NEEDS REVISION
+Note: Verdict based on four scoreable dimensions only.
+
+**Required Changes** (if NEEDS REVISION, otherwise write "None")
+1. [specific change]
+
+**Suggestions**
+- [optional improvement]
 """}
         ]
     )
