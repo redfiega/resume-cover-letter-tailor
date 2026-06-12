@@ -34,8 +34,6 @@
 
 ---
 
-*Append new entries below as the project develops.*
-
 ## Session 2 — UI Improvements
 
 **Date:** 2026-06-11
@@ -54,5 +52,24 @@
 - Resume style selector added with four options: Classic, Modern, Bold, Academic
 - Style choice is saved to session state and applied at download time
 - document_builder.py updated with full style definitions for all four styles
+
+---
+
+## Session 3 — Style Selector UI Improvement
+
+**Date:** 2026-06-11
+
+**User feedback:**
+- The four style preview boxes looked like clickable buttons but were not
+- The dropdown menu below them was hard to notice
+- Users tried clicking the preview boxes expecting them to select the style
+
+**Fix applied:**
+- Removed the four non-interactive preview boxes
+- Replaced dropdown with a radio button selector (horizontal layout)
+- Added a dynamic preview panel that updates based on the selected style
+- Preview panel shows a sample name, contact line, section header, and
+  bullet points styled to match the chosen format
+- Each style includes a written description below the preview
 
 ---

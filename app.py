@@ -80,50 +80,102 @@ generate_cover_letter = st.checkbox("Cover Letter", value=True)
 
 # Style selector
 st.subheader("Choose a document style:")
-col_s1, col_s2, col_s3, col_s4 = st.columns(4)
-with col_s1:
-    st.markdown("""
-        <div style="border: 2px solid #333; border-radius: 8px;
-        padding: 10px; text-align: center;">
-        <strong>Classic</strong><br>
-        <small>Black & white, traditional,
-        Times New Roman</small>
-        </div>
-    """, unsafe_allow_html=True)
-with col_s2:
-    st.markdown("""
-        <div style="border: 2px solid #0065A4; border-radius: 8px;
-        padding: 10px; text-align: center; color: #0065A4;">
-        <strong>Modern</strong><br>
-        <small>Blue accents, clean lines,
-        Calibri</small>
-        </div>
-    """, unsafe_allow_html=True)
-with col_s3:
-    st.markdown("""
-        <div style="border: 2px solid #1F497D; border-radius: 8px;
-        padding: 10px; text-align: center;
-        background-color: #1F497D; color: white;">
-        <strong>Bold</strong><br>
-        <small>Dark headers, high contrast,
-        Calibri</small>
-        </div>
-    """, unsafe_allow_html=True)
-with col_s4:
-    st.markdown("""
-        <div style="border: 2px solid #333; border-radius: 8px;
-        padding: 10px; text-align: center;">
-        <strong>Academic</strong><br>
-        <small>Formal, underlined headers,
-        Georgia</small>
-        </div>
-    """, unsafe_allow_html=True)
 
-selected_style = st.selectbox(
-    "Select your style:",
+selected_style = st.radio(
+    "Select a style to see a preview:",
     ["Classic", "Modern", "Bold", "Academic"],
+    horizontal=True,
     index=1
 )
+
+# Style preview panel
+style_previews = {
+    "Classic": {
+        "description": "Clean black and white formatting with Times New Roman font. "
+                       "Traditional and widely accepted across all industries.",
+        "name_color": "#000000",
+        "header_color": "#000000",
+        "background": "#ffffff",
+        "font": "Times New Roman",
+        "sample_header": "PROFESSIONAL EXPERIENCE"
+    },
+    "Modern": {
+        "description": "Blue accents with Calibri font. Clean, contemporary look "
+                       "that works well for most professional roles.",
+        "name_color": "#0065A4",
+        "header_color": "#0065A4",
+        "background": "#ffffff",
+        "font": "Calibri",
+        "sample_header": "PROFESSIONAL EXPERIENCE"
+    },
+    "Bold": {
+        "description": "Dark navy header backgrounds with white text and Calibri font. "
+                       "High contrast and visually striking.",
+        "name_color": "#ffffff",
+        "header_color": "#ffffff",
+        "background": "#1F497D",
+        "font": "Calibri",
+        "sample_header": "PROFESSIONAL EXPERIENCE"
+    },
+    "Academic": {
+        "description": "Formal black text with underlined section headers and Georgia "
+                       "font. Best suited for faculty, research, and academic roles.",
+        "name_color": "#000000",
+        "header_color": "#000000",
+        "background": "#ffffff",
+        "font": "Georgia",
+        "sample_header": "PROFESSIONAL EXPERIENCE"
+    }
+}
+
+preview = style_previews[selected_style]
+st.markdown(f"""
+    <div style="
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 10px 0;
+        background-color: #fafafa;">
+        <p style="margin: 0 0 8px 0; color: #555;">
+            <strong>Style Preview: {selected_style}</strong>
+        </p>
+        <div style="
+            background-color: white;
+            border: 1px solid #eee;
+            padding: 16px;
+            font-family: {preview['font']}, serif;">
+            <p style="
+                font-size: 18px;
+                font-weight: bold;
+                color: {preview['name_color']};
+                background-color: {preview['background']};
+                padding: 4px 8px;
+                margin: 0 0 8px 0;">
+                Your Name
+            </p>
+            <p style="font-size: 11px; color: #555; margin: 0 0 12px 0;">
+                your.email@example.com | (555) 123-4567 | City, State
+            </p>
+            <p style="
+                font-size: 11px;
+                font-weight: bold;
+                color: {preview['header_color']};
+                background-color: {preview['background']};
+                padding: 2px 4px;
+                margin: 0 0 6px 0;
+                border-bottom: 1px solid #ccc;">
+                {preview['sample_header']}
+            </p>
+            <p style="font-size: 10px; color: #333; margin: 0;">
+                • Led curriculum redesign increasing student pass rates by 14%<br>
+                • Managed cross-functional team of 6 instructional designers
+            </p>
+        </div>
+        <p style="margin: 10px 0 0 0; color: #555; font-size: 13px;">
+            {preview['description']}
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Analyze button
 if st.button("🔍 Analyze", type="primary"):
@@ -385,7 +437,9 @@ if st.session_state.get("step") in ["review", "revision"]:
                         build_resume_document(
                             st.session_state["resume_content"],
                             output_path,
-                            style_name=selected_style
+                            style_name=st.session_state.get(
+                                "selected_style", "Modern"
+                            )
                         )
                         with open(output_path, "rb") as f:
                             st.download_button(
@@ -414,7 +468,9 @@ if st.session_state.get("step") in ["review", "revision"]:
                         build_cover_letter_document(
                             st.session_state["cover_letter_content"],
                             output_path,
-                            style_name=selected_style
+                            style_name=st.session_state.get(
+                                "selected_style", "Modern"
+                            )
                         )
                         with open(output_path, "rb") as f:
                             st.download_button(
