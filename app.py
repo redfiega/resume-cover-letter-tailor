@@ -33,6 +33,21 @@ st.set_page_config(
     layout="wide"
 )
 
+# Custom CSS to make text areas more visible
+st.markdown("""
+    <style>
+    textarea {
+        border: 2px solid #0065A4 !important;
+        border-radius: 6px !important;
+    }
+    div[data-testid="stTextArea"] textarea {
+        border: 2px solid #0065A4 !important;
+        border-radius: 6px !important;
+        background-color: #f9f9f9 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("📄 Resume & Cover Letter Tailor")
 st.write("Upload your CV and a job posting to generate tailored, "
          "professional application documents.")
@@ -220,7 +235,7 @@ if st.session_state.get("step") in ["review", "revision"]:
         st.subheader("📋 Your Tailored Resume")
         st.markdown(st.session_state["resume_content"])
 
-st.markdown("""
+        st.markdown("""
             <div style="
                 border: 2px solid #0065A4;
                 border-radius: 8px;
@@ -259,7 +274,7 @@ st.markdown("""
                     except Exception as e:
                         st.error(f"Something went wrong: {e}")
 
-st.markdown("""
+        st.markdown("""
             <div style="
                 border: 2px solid #0065A4;
                 border-radius: 8px;

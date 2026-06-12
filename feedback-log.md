@@ -51,9 +51,12 @@
 **Changes applied so far:**
 - Updated Step 2 in app.py to display questions one at a time with a Next
   button, progress indicator, and expandable answer history
+- Added blue highlighted label boxes above each feedback text area
+- Added custom CSS to give all text areas a visible blue border and
+  light background color
 
 **Changes still in progress:**
-- Feedback box visibility improvement
 - Resume formatting style selector
 
+---
 ---
