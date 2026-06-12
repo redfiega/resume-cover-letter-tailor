@@ -48,15 +48,11 @@
 - Resume formatting is too plain — would like users to be able to select from
   formatting styles ranging from plain to more colorful/styled
 
-**Changes applied so far:**
-- Updated Step 2 in app.py to display questions one at a time with a Next
-  button, progress indicator, and expandable answer history
-- Added blue highlighted label boxes above each feedback text area
-- Added custom CSS to give all text areas a visible blue border and
-  light background color
+**Changes completed this session:**
+- Questions now display one at a time with progress bar and answer history
+- Feedback boxes now have blue border labels and visible text area styling
+- Resume style selector added with four options: Classic, Modern, Bold, Academic
+- Style choice is saved to session state and applied at download time
+- document_builder.py updated with full style definitions for all four styles
 
-**Changes still in progress:**
-- Resume formatting style selector
-
----
 ---

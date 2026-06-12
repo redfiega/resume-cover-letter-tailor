@@ -141,6 +141,7 @@ if st.button("🔍 Analyze", type="primary"):
                 cv_raw_text = extract_cv_text(uploaded_cv)
                 cv_content = parse_cv(cv_raw_text)
                 st.session_state["cv_content"] = cv_content
+                st.session_state["selected_style"] = selected_style
 
                 # Analyze job posting
                 job_analysis = analyze_job_posting(job_posting)
