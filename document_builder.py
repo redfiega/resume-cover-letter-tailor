@@ -43,10 +43,8 @@ STYLES = {
         "body_size": 12,
         "name_color": RGBColor(255, 255, 255),
         "header_color": RGBColor(255, 255, 255),
-        "header_bold": True,
-        "header_underline": False,
-        "accent_color": RGBColor(31, 73, 125),
         "background": True,
+        "background_hex": "1F497D",
         "margin": 0.75,
         "font": "Calibri"
     },
@@ -91,14 +89,14 @@ def add_horizontal_line(paragraph):
     paragraph._p.get_or_add_pPr().append(border)
 
 
-def add_shading(paragraph, color: RGBColor):
+def add_shading(paragraph, hex_color: str):
     """Add background color shading to a paragraph."""
     pPr = paragraph._p.get_or_add_pPr()
     shd = OxmlElement("w:shd")
-    hex_color = f"{color.red:02X}{color.green:02X}{color.blue:02X}"
+    clean_color = hex_color.replace("#", "")
     shd.set(qn("w:val"), "clear")
     shd.set(qn("w:color"), "auto")
-    shd.set(qn("w:fill"), hex_color)
+    shd.set(qn("w:fill"), clean_color)
     pPr.append(shd)
 
 
@@ -126,8 +124,8 @@ def build_resume_document(content: str, output_path: str,
             paragraph = doc.add_paragraph()
             paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             if style["background"]:
-                add_shading(paragraph, style["accent_color"])
-            run = paragraph.add_run(line.replace("# ", ""))
+                if style["background"]:
+                    add_shading(paragraph, style.get("background_hex", "1F497D"))
             run.bold = True
             run.font.size = Pt(style["name_size"])
             run.font.color.rgb = style["name_color"]
@@ -137,7 +135,7 @@ def build_resume_document(content: str, output_path: str,
             # Section header
             paragraph = doc.add_paragraph()
             if style["background"]:
-                add_shading(paragraph, style["accent_color"])
+                add_shading(paragraph, style.get("background_hex", "1F497D"))
             run = paragraph.add_run(line.replace("## ", "").upper())
             run.bold = style["header_bold"]
             run.underline = style["header_underline"]
