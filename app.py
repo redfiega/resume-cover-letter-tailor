@@ -1,191 +1,284 @@
-import anthropic
-import os
-from dotenv import load_dotenv
 import streamlit as st
+import os
+from cv_parser import extract_cv_text
+from agents import (
+    analyze_job_posting,
+    parse_cv,
+    generate_questions,
+    write_resume,
+    write_cover_letter,
+    review_document,
+    revise_document
+)
+from document_builder import (
+    build_resume_document,
+    build_cover_letter_document
+)
 
-load_dotenv()
+# Page configuration
+st.set_page_config(
+    page_title="Resume & Cover Letter Tailor",
+    page_icon="📄",
+    layout="wide"
+)
 
-try:
-    api_key = st.secrets["ANTHROPIC_API_KEY"]
-except Exception:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+st.title("📄 Resume & Cover Letter Tailor")
+st.write("Upload your CV and a job posting to generate tailored, "
+         "professional application documents.")
 
-client = anthropic.Anthropic(api_key=api_key)
+# ─────────────────────────────────────────
+# STEP 1 — INPUTS
+# ─────────────────────────────────────────
+st.header("Step 1 — Upload Your CV and Job Posting")
 
-# Model names for each tier
-OPUS = "claude-opus-4-5"
-SONNET = "claude-sonnet-4-5"
-HAIKU = "claude-haiku-4-5-20251001"
+col1, col2 = st.columns(2)
 
-
-def load_prompt(filename: str) -> str:
-    """Load a prompt from the prompt-library folder."""
-    path = os.path.join("prompt-library", filename)
-    with open(path, "r") as f:
-        return f.read()
-
-
-def load_domain_primer() -> str:
-    """Load the domain primer for context."""
-    with open("domain-primer.md", "r") as f:
-        return f.read()
-
-
-def load_evaluation_rubric() -> str:
-    """Load the evaluation rubric for scoring guidance."""
-    with open("evaluation.md", "r") as f:
-        return f.read()
-
-
-def analyze_job_posting(job_posting: str) -> str:
-    """Analyze a job posting using the Job Analyzer agent (Opus)."""
-    domain_primer = load_domain_primer()
-    prompt_template = load_prompt("analyze-job-posting.txt")
-
-    prompt = prompt_template.replace("{JOB_POSTING}", job_posting)
-
-    message = client.messages.create(
-        model=OPUS,
-        max_tokens=1500,
-        system=(f"You are an expert recruiter and hiring manager. "
-                f"Here is your domain knowledge:\n\n{domain_primer}"),
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+with col1:
+    uploaded_cv = st.file_uploader(
+        "Upload your CV (PDF or Word)",
+        type=["pdf", "docx"],
+        help="Upload your full CV in PDF or Word format"
     )
-    return message.content[0].text
 
-
-def parse_cv(cv_text: str) -> str:
-    """Parse and structure CV content using the CV Parser agent (Haiku)."""
-    prompt_template = load_prompt("parse-cv.txt")
-    prompt = prompt_template.replace("{CV_TEXT}", cv_text)
-
-    message = client.messages.create(
-        model=HAIKU,
-        max_tokens=3000,
-        system="You are an expert at reading and structuring professional documents. "
-               "Extract all content from the CV and organize it into clearly labeled "
-               "sections. Preserve everything — nothing should be lost in parsing.",
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+with col2:
+    job_posting = st.text_area(
+        "Paste the job posting here:",
+        placeholder="Copy and paste the full job description here...",
+        height=300
     )
-    return message.content[0].text
 
+# Document selection checkboxes
+st.subheader("What would you like to generate?")
+generate_resume = st.checkbox("Resume", value=True)
+generate_cover_letter = st.checkbox("Cover Letter", value=True)
 
-def generate_questions(cv_content: str, job_analysis: str) -> str:
-    """Generate clarifying questions using the Question Generator agent (Sonnet)."""
-    domain_primer = load_domain_primer()
-    prompt_template = load_prompt("generate-questions.txt")
+# Analyze button
+if st.button("🔍 Analyze", type="primary"):
+    if not uploaded_cv:
+        st.warning("Please upload your CV before continuing.")
+    elif not job_posting.strip():
+        st.warning("Please paste a job posting before continuing.")
+    elif not generate_resume and not generate_cover_letter:
+        st.warning("Please select at least one document to generate.")
+    else:
+        with st.spinner("Reading your CV and analyzing the job posting... "
+                        "this may take 20-30 seconds."):
+            try:
+                # Extract and parse CV
+                cv_raw_text = extract_cv_text(uploaded_cv)
+                cv_content = parse_cv(cv_raw_text)
+                st.session_state["cv_content"] = cv_content
 
-    prompt = prompt_template.replace("{CV_CONTENT}", cv_content)
-    prompt = prompt.replace("{JOB_ANALYSIS}", job_analysis)
+                # Analyze job posting
+                job_analysis = analyze_job_posting(job_posting)
+                st.session_state["job_analysis"] = job_analysis
+                st.session_state["job_posting"] = job_posting
+                st.session_state["generate_resume"] = generate_resume
+                st.session_state["generate_cover_letter"] = generate_cover_letter
 
-    message = client.messages.create(
-        model=SONNET,
-        max_tokens=1000,
-        system=(f"You are a career coach helping a job seeker prepare their "
-                f"application. Here is your domain knowledge:\n\n{domain_primer}"),
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
+                # Generate clarifying questions
+                questions = generate_questions(cv_content, job_analysis)
+                st.session_state["questions"] = questions
+                st.session_state["step"] = "questions"
+                st.success("Analysis complete! Please answer the questions below.")
+
+            except Exception as e:
+                st.error(f"Something went wrong: {e}")
+
+# ─────────────────────────────────────────
+# STEP 2 — CLARIFYING QUESTIONS
+# ─────────────────────────────────────────
+if st.session_state.get("step") in ["questions", "generating",
+                                     "review", "revision"]:
+    st.header("Step 2 — Answer a Few Questions")
+    st.write("These questions help tailor your documents more precisely.")
+    st.markdown(st.session_state.get("questions", ""))
+
+    user_answers = st.text_area(
+        "Your answers:",
+        placeholder="Answer each question above. You can number your answers "
+                    "to match the questions.",
+        height=200,
+        key="user_answers_input"
     )
-    return message.content[0].text
 
+    if st.button("✨ Generate Documents", type="primary"):
+        if not user_answers.strip():
+            st.warning("Please answer the questions before generating.")
+        else:
+            st.session_state["user_answers"] = user_answers
+            st.session_state["step"] = "generating"
 
-def write_resume(cv_content: str, job_analysis: str,
-                 user_answers: str) -> str:
-    """Generate a tailored resume using the Resume Writer agent (Sonnet)."""
-    domain_primer = load_domain_primer()
-    prompt_template = load_prompt("write-resume.txt")
+            with st.spinner("Generating your tailored documents... "
+                            "this may take 30-60 seconds."):
+                try:
+                    cv_content = st.session_state["cv_content"]
+                    job_analysis = st.session_state["job_analysis"]
 
-    prompt = prompt_template.replace("{CV_CONTENT}", cv_content)
-    prompt = prompt.replace("{JOB_ANALYSIS}", job_analysis)
-    prompt = prompt.replace("{USER_ANSWERS}", user_answers)
+                    # Generate resume if selected
+                    if st.session_state.get("generate_resume"):
+                        resume_content = write_resume(
+                            cv_content, job_analysis, user_answers
+                        )
+                        st.session_state["resume_content"] = resume_content
 
-    message = client.messages.create(
-        model=SONNET,
-        max_tokens=3000,
-        system=(f"You are an expert resume writer. "
-                f"Here is your domain knowledge:\n\n{domain_primer}"),
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return message.content[0].text
+                    # Generate cover letter if selected
+                    if st.session_state.get("generate_cover_letter"):
+                        resume_for_cl = st.session_state.get(
+                            "resume_content", "No resume generated"
+                        )
+                        cover_letter_content = write_cover_letter(
+                            cv_content, job_analysis,
+                            user_answers, resume_for_cl
+                        )
+                        st.session_state["cover_letter_content"] = cover_letter_content
 
+                    st.session_state["step"] = "review"
+                    st.success("Documents generated! Review them below.")
 
-def write_cover_letter(cv_content: str, job_analysis: str,
-                       user_answers: str, resume_content: str) -> str:
-    """Generate a tailored cover letter using the Cover Letter Writer (Sonnet)."""
-    domain_primer = load_domain_primer()
-    prompt_template = load_prompt("write-cover-letter.txt")
+                except Exception as e:
+                    st.error(f"Something went wrong: {e}")
 
-    prompt = prompt_template.replace("{CV_CONTENT}", cv_content)
-    prompt = prompt.replace("{JOB_ANALYSIS}", job_analysis)
-    prompt = prompt.replace("{USER_ANSWERS}", user_answers)
-    prompt = prompt.replace("{RESUME_CONTENT}", resume_content)
+# ─────────────────────────────────────────
+# STEP 3 — REVIEW AND FEEDBACK
+# ─────────────────────────────────────────
+if st.session_state.get("step") in ["review", "revision"]:
+    st.header("Step 3 — Review and Give Feedback")
+    st.write("Review your documents below. Provide feedback to request changes "
+             "before downloading.")
 
-    message = client.messages.create(
-        model=SONNET,
-        max_tokens=2000,
-        system=(f"You are an expert cover letter writer. "
-                f"Here is your domain knowledge:\n\n{domain_primer}"),
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return message.content[0].text
+    # Display resume
+    if st.session_state.get("generate_resume") and \
+            "resume_content" in st.session_state:
+        st.subheader("📋 Your Tailored Resume")
+        st.markdown(st.session_state["resume_content"])
 
+        resume_feedback = st.text_area(
+            "Feedback for resume (optional):",
+            placeholder="Example: Make the summary shorter. "
+                        "Move education to the top. "
+                        "Add more emphasis on leadership experience.",
+            height=100,
+            key="resume_feedback"
+        )
 
-def review_document(document_content: str, job_analysis: str,
-                    document_type: str) -> str:
-    """Review a document using the Reviewer agent (Opus)."""
-    domain_primer = load_domain_primer()
-    rubric = load_evaluation_rubric()
+        if st.button("🔄 Revise Resume"):
+            if not resume_feedback.strip():
+                st.warning("Please enter feedback before revising.")
+            else:
+                with st.spinner("Revising your resume..."):
+                    try:
+                        revised = revise_document(
+                            st.session_state["resume_content"],
+                            resume_feedback,
+                            st.session_state["job_analysis"]
+                        )
+                        st.session_state["resume_content"] = revised
+                        st.session_state["step"] = "revision"
+                        st.success("Resume revised!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
 
-    message = client.messages.create(
-        model=OPUS,
-        max_tokens=1500,
-        system=(f"You are a senior hiring manager reviewing application documents. "
-                f"Here is your domain knowledge:\n\n{domain_primer}\n\n"
-                f"Here is your scoring rubric:\n\n{rubric}"),
-        messages=[
-            {"role": "user", "content": f"""
-Review this {document_type} against the job analysis below.
+    # Display cover letter
+    if st.session_state.get("generate_cover_letter") and \
+            "cover_letter_content" in st.session_state:
+        st.subheader("✉️ Your Tailored Cover Letter")
+        st.markdown(st.session_state["cover_letter_content"])
 
-JOB ANALYSIS:
-{job_analysis}
+        cl_feedback = st.text_area(
+            "Feedback for cover letter (optional):",
+            placeholder="Example: Make the opening more engaging. "
+                        "Add a specific mention of their research program. "
+                        "Shorten the second paragraph.",
+            height=100,
+            key="cl_feedback"
+        )
 
-{document_type.upper()} TO REVIEW:
-{document_content}
+        if st.button("🔄 Revise Cover Letter"):
+            if not cl_feedback.strip():
+                st.warning("Please enter feedback before revising.")
+            else:
+                with st.spinner("Revising your cover letter..."):
+                    try:
+                        revised = revise_document(
+                            st.session_state["cover_letter_content"],
+                            cl_feedback,
+                            st.session_state["job_analysis"]
+                        )
+                        st.session_state["cover_letter_content"] = revised
+                        st.session_state["step"] = "revision"
+                        st.success("Cover letter revised!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
 
-Score each dimension 1-5 and give an overall verdict of APPROVED or NEEDS REVISION.
-If NEEDS REVISION, list specific required changes.
-"""}
-        ]
-    )
-    return message.content[0].text
+# ─────────────────────────────────────────
+# STEP 4 — DOWNLOAD
+# ─────────────────────────────────────────
+if st.session_state.get("step") in ["review", "revision"]:
+    st.header("Step 4 — Download Your Documents")
+    st.write("When you are happy with your documents, download them below.")
 
+    col1, col2 = st.columns(2)
 
-def revise_document(current_content: str, user_feedback: str,
-                    job_analysis: str) -> str:
-    """Revise a document based on user feedback using the Revision Agent (Sonnet)."""
-    domain_primer = load_domain_primer()
-    prompt_template = load_prompt("revise-document.txt")
+    with col1:
+        if st.session_state.get("generate_resume") and \
+                "resume_content" in st.session_state:
+            if st.button("📥 Build Resume for Download"):
+                with st.spinner("Building Word document..."):
+                    try:
+                        output_path = os.path.join(
+                            "outputs", "resumes", "tailored_resume.docx"
+                        )
+                        os.makedirs(
+                            os.path.dirname(output_path), exist_ok=True
+                        )
+                        build_resume_document(
+                            st.session_state["resume_content"], output_path
+                        )
+                        with open(output_path, "rb") as f:
+                            st.download_button(
+                                label="⬇️ Download Resume (.docx)",
+                                data=f,
+                                file_name="tailored_resume.docx",
+                                mime="application/vnd.openxmlformats-"
+                                     "officedocument.wordprocessingml.document",
+                                key="download_resume"
+                            )
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
 
-    prompt = prompt_template.replace("{CURRENT_DOCUMENT}", current_content)
-    prompt = prompt.replace("{USER_FEEDBACK}", user_feedback)
-    prompt = prompt.replace("{JOB_ANALYSIS}", job_analysis)
+    with col2:
+        if st.session_state.get("generate_cover_letter") and \
+                "cover_letter_content" in st.session_state:
+            if st.button("📥 Build Cover Letter for Download"):
+                with st.spinner("Building Word document..."):
+                    try:
+                        output_path = os.path.join(
+                            "outputs", "cover-letters", "tailored_cover_letter.docx"
+                        )
+                        os.makedirs(
+                            os.path.dirname(output_path), exist_ok=True
+                        )
+                        build_cover_letter_document(
+                            st.session_state["cover_letter_content"], output_path
+                        )
+                        with open(output_path, "rb") as f:
+                            st.download_button(
+                                label="⬇️ Download Cover Letter (.docx)",
+                                data=f,
+                                file_name="tailored_cover_letter.docx",
+                                mime="application/vnd.openxmlformats-"
+                                     "officedocument.wordprocessingml.document",
+                                key="download_cover_letter"
+                            )
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
 
-    message = client.messages.create(
-        model=SONNET,
-        max_tokens=3000,
-        system=(f"You are an expert editor. Apply all requested changes precisely "
-                f"and completely. Here is your domain knowledge:\n\n{domain_primer}"),
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return message.content[0].text
+    # Start over button
+    st.divider()
+    if st.button("🔁 Start Over"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
