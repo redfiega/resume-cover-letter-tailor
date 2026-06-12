@@ -1,0 +1,33 @@
+# Write Resume Prompt
+
+## Instructions for Use
+Replace all {PLACEHOLDERS} with actual content before sending.
+
+## Prompt
+
+Write a tailored, professional resume based on the information below.
+
+**CV Content:**
+{CV_CONTENT}
+
+**Job Analysis:**
+{JOB_ANALYSIS}
+
+**User's Answers to Clarifying Questions:**
+{USER_ANSWERS}
+
+Follow the resume structure from the domain primer:
+1. Header (name and contact info)
+2. Professional Summary (2-4 sentences)
+3. Core Skills (relevant to this posting)
+4. Professional Experience (reverse chronological, bullet points)
+5. Education
+6. Any relevant optional sections
+
+Requirements:
+- Mirror keywords from the job analysis naturally
+- Start every bullet with a strong action verb
+- Quantify accomplishments where the CV provides numbers
+- Keep to 1-2 pages of content
+- Cut anything not relevant to this specific posting
+- Match the tone identified in the job analysis
