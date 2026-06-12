@@ -35,3 +35,25 @@
 ---
 
 *Append new entries below as the project develops.*
+
+## Session 2 — UI Improvements
+
+**Date:** 2026-06-11
+
+**User feedback:**
+- Questions were displayed all at once requiring a long block of text to answer
+  — changed to one question at a time with a progress bar and answer history
+- Feedback boxes were hard to see while scrolling — needs a bold outline or
+  highlight to make them more visible
+- Resume formatting is too plain — would like users to be able to select from
+  formatting styles ranging from plain to more colorful/styled
+
+**Changes applied so far:**
+- Updated Step 2 in app.py to display questions one at a time with a Next
+  button, progress indicator, and expandable answer history
+
+**Changes still in progress:**
+- Feedback box visibility improvement
+- Resume formatting style selector
+
+---
