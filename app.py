@@ -382,7 +382,9 @@ if st.session_state.get("step") in ["review", "revision"]:
                             os.path.dirname(output_path), exist_ok=True
                         )
                         build_resume_document(
-                            st.session_state["resume_content"], output_path
+                            st.session_state["resume_content"],
+                            output_path,
+                            style_name=selected_style
                         )
                         with open(output_path, "rb") as f:
                             st.download_button(
@@ -409,7 +411,9 @@ if st.session_state.get("step") in ["review", "revision"]:
                             os.path.dirname(output_path), exist_ok=True
                         )
                         build_cover_letter_document(
-                            st.session_state["cover_letter_content"], output_path
+                            st.session_state["cover_letter_content"],
+                            output_path,
+                            style_name=selected_style
                         )
                         with open(output_path, "rb") as f:
                             st.download_button(
