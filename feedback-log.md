@@ -73,3 +73,38 @@
 - Each style includes a written description below the preview
 
 ---
+
+## Session 4 — App Restructure and UI Improvements
+
+**Date:** 2026-06-11
+
+**User feedback:**
+- App needed a homepage with two clear paths:
+  1. Generate New Documents (existing workflow)
+  2. Evaluate Existing Documents (new workflow)
+- Style preview boxes looked like buttons but were not clickable — confusing
+- Path selection boxes looked like buttons but were not clickable — confusing
+- Button colors were jarring (red primary button stood out too much)
+- Evaluation log needed a built-in way to generate scores automatically
+
+**Changes applied:**
+- Rebuilt app.py with a homepage that routes users to Path 1 or Path 2
+- Path 1: Generate New Documents (existing workflow, now with evaluation
+  button at the end)
+- Path 2: Evaluate Existing Documents (new workflow — upload or paste
+  existing resume/cover letter, get scored feedback across five dimensions)
+- Path 2 includes warning when text is pasted instead of file uploaded,
+  noting that Visual Structure cannot be evaluated from text
+- Path 2 includes option to switch to Path 1 after evaluation
+- Style selector preview boxes replaced with radio buttons and dynamic
+  preview panel
+- Path selection redesigned as two large clickable buttons with descriptions
+  built into the button text
+- Primary button color changed from red to blue (#0065A4) to match app theme
+- Evaluate My Documents button added at end of Path 1 review section
+
+**Changes still in progress:**
+- Full end-to-end testing of both paths
+- Deployment to Streamlit Cloud
+
+---
