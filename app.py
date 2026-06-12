@@ -97,26 +97,81 @@ if st.button("🔍 Analyze", type="primary"):
                 st.error(f"Something went wrong: {e}")
 
 # ─────────────────────────────────────────
-# STEP 2 — CLARIFYING QUESTIONS
+# STEP 2 — CLARIFYING QUESTIONS (one at a time)
 # ─────────────────────────────────────────
 if st.session_state.get("step") in ["questions", "generating",
                                      "review", "revision"]:
     st.header("Step 2 — Answer a Few Questions")
     st.write("These questions help tailor your documents more precisely.")
-    st.markdown(st.session_state.get("questions", ""))
 
-    user_answers = st.text_area(
-        "Your answers:",
-        placeholder="Answer each question above. You can number your answers "
-                    "to match the questions.",
-        height=200,
-        key="user_answers_input"
-    )
+    # Parse questions into a list if not already done
+    if "question_list" not in st.session_state:
+        raw_questions = st.session_state.get("questions", "")
+        lines = raw_questions.split("\n")
+        question_list = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith("**Question"):
+                # Extract just the question text
+                question_text = line.replace("**", "").strip()
+                question_list.append(question_text)
+        st.session_state["question_list"] = question_list
+        st.session_state["current_question_index"] = 0
+        st.session_state["question_answers"] = []
 
-    if st.button("✨ Generate Documents", type="primary"):
-        if not user_answers.strip():
-            st.warning("Please answer the questions before generating.")
-        else:
+    question_list = st.session_state.get("question_list", [])
+    current_index = st.session_state.get("current_question_index", 0)
+    answers = st.session_state.get("question_answers", [])
+
+    # Show progress
+    total_questions = len(question_list)
+    if total_questions > 0:
+        st.progress(current_index / total_questions)
+        st.write(f"Question {min(current_index + 1, total_questions)} "
+                 f"of {total_questions}")
+
+    # Show previous answers
+    if answers:
+        with st.expander("Your answers so far"):
+            for i, (q, a) in enumerate(
+                zip(question_list[:len(answers)], answers)
+            ):
+                st.write(f"**{q}**")
+                st.write(f"_{a}_")
+                st.divider()
+
+    # Show current question
+    if current_index < total_questions:
+        current_question = question_list[current_index]
+        st.subheader(current_question)
+
+        current_answer = st.text_area(
+            "Your answer:",
+            placeholder="Type your answer here...",
+            height=150,
+            key=f"answer_{current_index}"
+        )
+
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            if st.button("Next ➡️", type="primary"):
+                if not current_answer.strip():
+                    st.warning("Please answer the question before continuing.")
+                else:
+                    answers.append(current_answer)
+                    st.session_state["question_answers"] = answers
+                    st.session_state["current_question_index"] = current_index + 1
+                    st.rerun()
+
+    # All questions answered — show generate button
+    if current_index >= total_questions and total_questions > 0:
+        st.success("All questions answered!")
+        user_answers = "\n\n".join([
+            f"Q: {q}\nA: {a}"
+            for q, a in zip(question_list, answers)
+        ])
+
+        if st.button("✨ Generate Documents", type="primary"):
             st.session_state["user_answers"] = user_answers
             st.session_state["step"] = "generating"
 
@@ -142,7 +197,8 @@ if st.session_state.get("step") in ["questions", "generating",
                             cv_content, job_analysis,
                             user_answers, resume_for_cl
                         )
-                        st.session_state["cover_letter_content"] = cover_letter_content
+                        st.session_state["cover_letter_content"] = \
+                            cover_letter_content
 
                     st.session_state["step"] = "review"
                     st.success("Documents generated! Review them below.")
