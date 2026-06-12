@@ -78,6 +78,53 @@ st.subheader("What would you like to generate?")
 generate_resume = st.checkbox("Resume", value=True)
 generate_cover_letter = st.checkbox("Cover Letter", value=True)
 
+# Style selector
+st.subheader("Choose a document style:")
+col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+with col_s1:
+    st.markdown("""
+        <div style="border: 2px solid #333; border-radius: 8px;
+        padding: 10px; text-align: center;">
+        <strong>Classic</strong><br>
+        <small>Black & white, traditional,
+        Times New Roman</small>
+        </div>
+    """, unsafe_allow_html=True)
+with col_s2:
+    st.markdown("""
+        <div style="border: 2px solid #0065A4; border-radius: 8px;
+        padding: 10px; text-align: center; color: #0065A4;">
+        <strong>Modern</strong><br>
+        <small>Blue accents, clean lines,
+        Calibri</small>
+        </div>
+    """, unsafe_allow_html=True)
+with col_s3:
+    st.markdown("""
+        <div style="border: 2px solid #1F497D; border-radius: 8px;
+        padding: 10px; text-align: center;
+        background-color: #1F497D; color: white;">
+        <strong>Bold</strong><br>
+        <small>Dark headers, high contrast,
+        Calibri</small>
+        </div>
+    """, unsafe_allow_html=True)
+with col_s4:
+    st.markdown("""
+        <div style="border: 2px solid #333; border-radius: 8px;
+        padding: 10px; text-align: center;">
+        <strong>Academic</strong><br>
+        <small>Formal, underlined headers,
+        Georgia</small>
+        </div>
+    """, unsafe_allow_html=True)
+
+selected_style = st.selectbox(
+    "Select your style:",
+    ["Classic", "Modern", "Bold", "Academic"],
+    index=1
+)
+
 # Analyze button
 if st.button("🔍 Analyze", type="primary"):
     if not uploaded_cv:
