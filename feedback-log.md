@@ -108,3 +108,40 @@
 - Deployment to Streamlit Cloud
 
 ---
+
+## Session 5 — Homepage Redesign and Structural Changes
+
+**Date:** 2026-06-11
+
+**User feedback:**
+- Homepage looked too AI-generated and form-like, not like a polished tool
+- Layout was too vertical and drawn out
+- HTML emoji icons in headers looked unprofessional
+- "Required for generating new documents. Optional for evaluation." caption
+  was confusing — implied evaluation could work without any documents
+- Two-path buttons were not clearly clickable
+- App needed to accept both CV/Resume AND existing cover letter on the homepage
+  so both documents could be used for generation context or evaluation
+
+**Changes applied:**
+- Added gradient hero banner with tagline at top of page
+- Added step indicator pills that update to show current position in workflow
+- Removed all emoji icons from headers and section titles
+- Replaced confusing captions with a single clear instruction box at the top
+- Added "Existing Cover Letter (optional)" input to homepage
+- Both CV/Resume and Cover Letter can be uploaded, pasted, or skipped
+- If cover letter is provided in Path 1, it is used as tone/style context
+  for the Cover Letter Writer agent
+- Path 2 evaluates whichever documents are provided, with a consistency
+  check if both are present
+- Reduced text area heights to make page more compact
+- Added "(optional)" label next to Existing Cover Letter header
+
+**Current app structure:**
+- Homepage: CV/Resume input + Cover Letter input + Job Posting + Path selection
+- Path 1 (Generate): Style → Questions → Generate → Review/Revise → Evaluate
+  (optional) → Download
+- Path 2 (Evaluate): Auto-evaluates uploaded documents → Resume report +
+  Cover Letter report + Consistency check (if both provided)
+
+---

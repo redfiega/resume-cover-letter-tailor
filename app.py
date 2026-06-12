@@ -37,6 +37,13 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
     <style>
+    html, body, [class*="css"] {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+    .block-container {
+        padding-top: 0rem !important;
+        max-width: 900px !important;
+    }
     textarea {
         border: 2px solid #0065A4 !important;
         border-radius: 6px !important;
@@ -46,38 +53,125 @@ st.markdown("""
         border-radius: 6px !important;
         background-color: #f9f9f9 !important;
     }
-    div[data-testid="stColumn"]:first-child button[kind="primary"] {
+    button[kind="primary"] {
         background-color: #0065A4 !important;
         border-color: #0065A4 !important;
         color: white !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
     }
-    div[data-testid="stColumn"]:first-child button[kind="primary"]:hover {
+    button[kind="primary"]:hover {
         background-color: #004f82 !important;
     }
-    div[data-testid="stColumn"]:last-child button {
+    button[kind="secondary"] {
         background-color: #f0f7ff !important;
         border: 2px solid #0065A4 !important;
         color: #0065A4 !important;
+        border-radius: 8px !important;
         font-weight: 600 !important;
     }
-    div[data-testid="stColumn"]:last-child button:hover {
+    button[kind="secondary"]:hover {
         background-color: #dceeff !important;
+    }
+    h2 {
+        color: #0065A4 !important;
+        font-size: 1.3rem !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    h3 {
+        font-size: 1.05rem !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    div[data-testid="stVerticalBlock"] > div {
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("📄 Resume & Cover Letter Tailor")
-st.write("Provide your documents and a job posting to get started.")
+# Hero Banner
+st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #0065A4 0%, #003f6b 100%);
+        padding: 32px 40px 28px 40px;
+        border-radius: 0 0 12px 12px;
+        margin-bottom: 24px;">
+        <h1 style="
+            color: white;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 6px 0;">
+            Resume &amp; Cover Letter Tailor
+        </h1>
+        <p style="
+            font-size: 1rem;
+            color: #cce4f7;
+            margin: 0;">
+            Upload your CV and a job posting — get a tailored,
+            job-ready resume and cover letter in minutes.
+        </p>
+    </div>
+""", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────
-# HOMEPAGE — INPUTS
+# HOMEPAGE
 # ─────────────────────────────────────────
 if st.session_state.get("path") is None:
 
-    st.header("Step 1 — Provide Your Documents")
+    st.markdown("""
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;
+            align-items: center; flex-wrap: wrap;">
+            <span style="background: #0065A4; color: white; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                1 · Your Documents
+            </span>
+            <span style="color: #aaa;">→</span>
+            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem;">
+                2 · Choose Path
+            </span>
+            <span style="color: #aaa;">→</span>
+            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem;">
+                3 · Style
+            </span>
+            <span style="color: #aaa;">→</span>
+            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem;">
+                4 · Questions
+            </span>
+            <span style="color: #aaa;">→</span>
+            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem;">
+                5 · Review
+            </span>
+            <span style="color: #aaa;">→</span>
+            <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                border-radius: 20px; font-size: 0.85rem;">
+                6 · Download
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+        <div style="
+            background-color: #f0f7ff;
+            border-left: 4px solid #0065A4;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            color: #333;">
+            Upload your CV or resume and paste a job posting, then choose
+            whether to <strong>generate new documents</strong> or
+            <strong>evaluate what you already have</strong>.
+        </div>
+    """, unsafe_allow_html=True)
 
     # CV or Resume input
-    st.subheader("📋 Your CV or Resume (required for generating new documents)")
+    st.markdown("### Your CV or Resume")
     cv_input_method = st.radio(
         "How would you like to provide your CV or Resume?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
@@ -99,7 +193,7 @@ if st.session_state.get("path") is None:
                 try:
                     cv_text = extract_cv_text(uploaded_cv)
                     cv_file_name = uploaded_cv.name
-                    st.success(f"✅ {uploaded_cv.name} uploaded successfully!")
+                    st.success(f"Uploaded: {uploaded_cv.name}")
                 except Exception as e:
                     st.error(f"Could not read the file: {e}")
 
@@ -107,12 +201,12 @@ if st.session_state.get("path") is None:
         cv_text = st.text_area(
             "Paste your CV or Resume here:",
             placeholder="Paste the full text of your CV or Resume here...",
-            height=300,
+            height=200,
             key="cv_paste"
         )
 
     # Cover letter input
-    st.subheader("✉️ Existing Cover Letter (optional)")
+    st.markdown("### Existing Cover Letter *(optional)*")
     cl_input_method = st.radio(
         "How would you like to provide your cover letter?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
@@ -132,7 +226,7 @@ if st.session_state.get("path") is None:
             with st.spinner("Reading your cover letter..."):
                 try:
                     cl_text = extract_cv_text(uploaded_cl)
-                    st.success(f"✅ {uploaded_cl.name} uploaded successfully!")
+                    st.success(f"Uploaded: {uploaded_cl.name}")
                 except Exception as e:
                     st.error(f"Could not read the file: {e}")
 
@@ -140,28 +234,27 @@ if st.session_state.get("path") is None:
         cl_text = st.text_area(
             "Paste your cover letter here:",
             placeholder="Paste the full text of your cover letter here...",
-            height=200,
+            height=150,
             key="cl_paste_home"
         )
 
     # Job posting input
-    st.subheader("📌 Job Posting (required)")
+    st.markdown("### Job Posting")
     job_posting = st.text_area(
         "Paste the job posting here:",
         placeholder="Copy and paste the full job description here...",
-        height=300,
+        height=200,
         key="job_posting_input"
     )
 
     # Path selection
-    st.header("Step 2 — Choose Your Path")
-    st.write("What would you like to do?")
+    st.markdown("### Choose Your Path")
 
     col_a, col_b = st.columns(2)
 
     with col_a:
         if st.button(
-            "✨ Build My Documents\n\nGenerate a new tailored resume and/or "
+            "Build My Documents\n\nGenerate a new tailored resume and/or "
             "cover letter based on your CV and the job posting.",
             type="primary",
             use_container_width=True,
@@ -192,7 +285,7 @@ if st.session_state.get("path") is None:
 
     with col_b:
         if st.button(
-            "📊 Evaluate My Documents\n\nGet scored feedback on your existing "
+            "Evaluate My Documents\n\nGet scored feedback on your existing "
             "resume and/or cover letter based on the job posting.",
             use_container_width=True,
             key="path2_button"
@@ -221,12 +314,46 @@ if st.session_state.get("path") is None:
 # ─────────────────────────────────────────
 elif st.session_state.get("path") == "generate":
 
-    # ── Style selector ──
     if st.session_state.get("step") == "style":
-        st.header("Step 3 — Choose a Document Style")
+        st.markdown("""
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;
+                align-items: center; flex-wrap: wrap;">
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    1 · Documents
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    2 · Path
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #0065A4; color: white; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                    3 · Style
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    4 · Questions
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    5 · Review
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    6 · Download
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("## Choose a Document Style")
 
         selected_style = st.radio(
-            "Select a style to see a preview:",
+            "Select a style:",
             ["Classic", "Modern", "Bold", "Academic"],
             horizontal=True,
             index=1
@@ -270,34 +397,34 @@ elif st.session_state.get("path") == "generate":
         preview = style_previews[selected_style]
         st.markdown(f"""
             <div style="border: 1px solid #ddd; border-radius: 8px;
-                padding: 20px; margin: 10px 0; background-color: #fafafa;">
-                <p style="margin: 0 0 8px 0; color: #555;">
-                    <strong>Style Preview: {selected_style}</strong></p>
+                padding: 16px; margin: 8px 0; background-color: #fafafa;">
+                <p style="margin: 0 0 8px 0; color: #555; font-size: 0.85rem;">
+                    <strong>Preview — {selected_style}</strong></p>
                 <div style="background-color: white; border: 1px solid #eee;
                     padding: 16px; font-family: {preview['font']}, serif;">
-                    <p style="font-size: 18px; font-weight: bold;
+                    <p style="font-size: 16px; font-weight: bold;
                         color: {preview['name_color']};
                         background-color: {preview['background']};
-                        padding: 4px 8px; margin: 0 0 8px 0;">Your Name</p>
-                    <p style="font-size: 11px; color: #555; margin: 0 0 12px 0;">
+                        padding: 4px 8px; margin: 0 0 6px 0;">Your Name</p>
+                    <p style="font-size: 10px; color: #555; margin: 0 0 10px 0;">
                         your.email@example.com | (555) 123-4567 | City, State
                     </p>
-                    <p style="font-size: 11px; font-weight: bold;
+                    <p style="font-size: 10px; font-weight: bold;
                         color: {preview['header_color']};
                         background-color: {preview['background']};
-                        padding: 2px 4px; margin: 0 0 6px 0;
+                        padding: 2px 4px; margin: 0 0 4px 0;
                         border-bottom: 1px solid #ccc;">
                         PROFESSIONAL EXPERIENCE</p>
-                    <p style="font-size: 10px; color: #333; margin: 0;">
+                    <p style="font-size: 9px; color: #333; margin: 0;">
                         • Led curriculum redesign increasing pass rates by 14%<br>
                         • Managed cross-functional team of 6 designers</p>
                 </div>
-                <p style="margin: 10px 0 0 0; color: #555; font-size: 13px;">
+                <p style="margin: 8px 0 0 0; color: #666; font-size: 0.82rem;">
                     {preview['description']}</p>
             </div>
         """, unsafe_allow_html=True)
 
-        st.subheader("What would you like to generate?")
+        st.markdown("### What would you like to generate?")
         generate_resume = st.checkbox("Resume", value=True)
         generate_cover_letter = st.checkbox("Cover Letter", value=True)
 
@@ -311,11 +438,45 @@ elif st.session_state.get("path") == "generate":
                 st.session_state["step"] = "questions"
                 st.rerun()
 
-    # ── Questions ──
     elif st.session_state.get("step") in ["questions", "generating",
                                            "review", "revision"]:
-        st.header("Step 4 — Answer a Few Questions")
-        st.write("These questions help tailor your documents more precisely.")
+        st.markdown("""
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;
+                align-items: center; flex-wrap: wrap;">
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    1 · Documents
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    2 · Path
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    3 · Style
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #0065A4; color: white; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                    4 · Questions
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    5 · Review
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    6 · Download
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("## A Few Quick Questions")
+        st.caption("These help tailor your documents more precisely.")
 
         if "question_list" not in st.session_state:
             raw_questions = st.session_state.get("questions", "")
@@ -337,8 +498,8 @@ elif st.session_state.get("path") == "generate":
 
         if total_questions > 0:
             st.progress(current_index / total_questions)
-            st.write(f"Question {min(current_index + 1, total_questions)} "
-                     f"of {total_questions}")
+            st.caption(f"Question {min(current_index + 1, total_questions)} "
+                       f"of {total_questions}")
 
         if answers:
             with st.expander("Your answers so far"):
@@ -351,18 +512,18 @@ elif st.session_state.get("path") == "generate":
 
         if current_index < total_questions:
             current_question = question_list[current_index]
-            st.subheader(current_question)
+            st.markdown(f"### {current_question}")
 
             current_answer = st.text_area(
                 "Your answer:",
                 placeholder="Type your answer here...",
-                height=150,
+                height=120,
                 key=f"answer_{current_index}"
             )
 
             col1, col2 = st.columns([1, 4])
             with col1:
-                if st.button("Next ➡️", type="primary"):
+                if st.button("Next →", type="primary"):
                     if not current_answer.strip():
                         st.warning(
                             "Please answer the question before continuing."
@@ -381,7 +542,7 @@ elif st.session_state.get("path") == "generate":
                 for q, a in zip(question_list, answers)
             ])
 
-            if st.button("✨ Generate Documents", type="primary"):
+            if st.button("Generate Documents", type="primary"):
                 st.session_state["user_answers"] = user_answers
                 st.session_state["step"] = "generating"
 
@@ -392,7 +553,6 @@ elif st.session_state.get("path") == "generate":
                         job_analysis = st.session_state["job_analysis"]
                         cl_context = st.session_state.get("cl_content", "")
 
-                        # Add cover letter context if provided
                         if cl_context.strip():
                             user_answers_with_context = (
                                 user_answers +
@@ -421,31 +581,61 @@ elif st.session_state.get("path") == "generate":
                                 cover_letter_content
 
                         st.session_state["step"] = "review"
-                        st.success("Documents generated! Review them below.")
                         st.rerun()
 
                     except Exception as e:
                         st.error(f"Something went wrong: {e}")
 
-    # ── Review and feedback ──
     if st.session_state.get("step") in ["review", "revision"]:
-        st.header("Step 5 — Review and Give Feedback")
-        st.write("Review your documents below. Provide feedback to request "
-                 "changes before downloading.")
+        st.markdown("""
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;
+                align-items: center; flex-wrap: wrap;">
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    1 · Documents
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    2 · Path
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    3 · Style
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    4 · Questions
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #0065A4; color: white; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                    5 · Review
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    6 · Download
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
 
-        # Resume
+        st.markdown("## Review Your Documents")
+        st.caption("Review and request changes before downloading.")
+
         if st.session_state.get("generate_resume") and \
                 "resume_content" in st.session_state:
-            st.subheader("📋 Your Tailored Resume")
+            st.markdown("### Your Tailored Resume")
             st.markdown(st.session_state["resume_content"])
 
             st.markdown("""
                 <div style="border: 2px solid #0065A4; border-radius: 8px;
-                    padding: 12px; margin: 10px 0;
-                    background-color: #f0f7ff;">
-                    <strong>💬 Provide Feedback on Your Resume</strong><br>
-                    <em>Use the box below to request changes to content
-                    or formatting.</em>
+                    padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
+                    <strong>Provide Feedback on Your Resume</strong><br>
+                    <span style="font-size: 0.9rem; color: #555;">
+                    Request changes to content or formatting below.</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -453,11 +643,11 @@ elif st.session_state.get("path") == "generate":
                 "What would you like to change?",
                 placeholder="Example: Make the summary shorter. "
                             "Move education to the top.",
-                height=100,
+                height=80,
                 key="resume_feedback"
             )
 
-            if st.button("🔄 Revise Resume"):
+            if st.button("Revise Resume"):
                 if not resume_feedback.strip():
                     st.warning("Please enter feedback before revising.")
                 else:
@@ -475,19 +665,17 @@ elif st.session_state.get("path") == "generate":
                         except Exception as e:
                             st.error(f"Something went wrong: {e}")
 
-        # Cover letter
         if st.session_state.get("generate_cover_letter") and \
                 "cover_letter_content" in st.session_state:
-            st.subheader("✉️ Your Tailored Cover Letter")
+            st.markdown("### Your Tailored Cover Letter")
             st.markdown(st.session_state["cover_letter_content"])
 
             st.markdown("""
                 <div style="border: 2px solid #0065A4; border-radius: 8px;
-                    padding: 12px; margin: 10px 0;
-                    background-color: #f0f7ff;">
-                    <strong>💬 Provide Feedback on Your Cover Letter</strong><br>
-                    <em>Use the box below to request changes to content
-                    or formatting.</em>
+                    padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
+                    <strong>Provide Feedback on Your Cover Letter</strong><br>
+                    <span style="font-size: 0.9rem; color: #555;">
+                    Request changes to content or formatting below.</span>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -495,11 +683,11 @@ elif st.session_state.get("path") == "generate":
                 "What would you like to change?",
                 placeholder="Example: Make the opening more engaging. "
                             "Shorten the second paragraph.",
-                height=100,
+                height=80,
                 key="cl_feedback"
             )
 
-            if st.button("🔄 Revise Cover Letter"):
+            if st.button("Revise Cover Letter"):
                 if not cl_feedback.strip():
                     st.warning("Please enter feedback before revising.")
                 else:
@@ -517,14 +705,12 @@ elif st.session_state.get("path") == "generate":
                         except Exception as e:
                             st.error(f"Something went wrong: {e}")
 
-        # Evaluate button
         st.divider()
-        st.subheader("📊 Optional — Evaluate Your Documents")
-        st.write("Get a scored evaluation report across five dimensions.")
+        st.markdown("### Optional — Evaluate Your Documents")
+        st.caption("Get a scored report across five dimensions.")
 
-        if st.button("📊 Evaluate My Documents"):
-            with st.spinner("Running evaluation... "
-                            "this may take 30-60 seconds."):
+        if st.button("Evaluate My Documents"):
+            with st.spinner("Running evaluation... this may take 30-60 seconds."):
                 try:
                     results = {}
                     if st.session_state.get("generate_resume") and \
@@ -548,20 +734,54 @@ elif st.session_state.get("path") == "generate":
         if "evaluation_results" in st.session_state:
             for doc_type, report in \
                     st.session_state["evaluation_results"].items():
-                st.subheader(f"Evaluation Report — {doc_type}")
+                st.markdown(f"#### Evaluation Report — {doc_type}")
                 st.markdown(report)
 
-        # Download
         st.divider()
-        st.header("Step 6 — Download Your Documents")
-        st.write("When you are happy with your documents, download them below.")
+        st.markdown("""
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;
+                align-items: center; flex-wrap: wrap;">
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    1 · Documents
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    2 · Path
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    3 · Style
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    4 · Questions
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #e8f0fe; color: #555; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem;">
+                    5 · Review
+                </span>
+                <span style="color: #aaa;">→</span>
+                <span style="background: #0065A4; color: white; padding: 4px 14px;
+                    border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                    6 · Download
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("## Download Your Documents")
+        st.caption("When you are happy with your documents, download them below.")
 
         col1, col2 = st.columns(2)
 
         with col1:
             if st.session_state.get("generate_resume") and \
                     "resume_content" in st.session_state:
-                if st.button("📥 Build Resume for Download"):
+                if st.button("Build Resume for Download", type="primary"):
                     with st.spinner("Building Word document..."):
                         try:
                             output_path = os.path.join(
@@ -579,7 +799,7 @@ elif st.session_state.get("path") == "generate":
                             )
                             with open(output_path, "rb") as f:
                                 st.download_button(
-                                    label="⬇️ Download Resume (.docx)",
+                                    label="Download Resume (.docx)",
                                     data=f,
                                     file_name="tailored_resume.docx",
                                     mime="application/vnd.openxmlformats-"
@@ -593,7 +813,7 @@ elif st.session_state.get("path") == "generate":
         with col2:
             if st.session_state.get("generate_cover_letter") and \
                     "cover_letter_content" in st.session_state:
-                if st.button("📥 Build Cover Letter for Download"):
+                if st.button("Build Cover Letter for Download"):
                     with st.spinner("Building Word document..."):
                         try:
                             output_path = os.path.join(
@@ -612,7 +832,7 @@ elif st.session_state.get("path") == "generate":
                             )
                             with open(output_path, "rb") as f:
                                 st.download_button(
-                                    label="⬇️ Download Cover Letter (.docx)",
+                                    label="Download Cover Letter (.docx)",
                                     data=f,
                                     file_name="tailored_cover_letter.docx",
                                     mime="application/vnd.openxmlformats-"
@@ -624,7 +844,7 @@ elif st.session_state.get("path") == "generate":
                             st.error(f"Something went wrong: {e}")
 
         st.divider()
-        if st.button("🔁 Start Over"):
+        if st.button("Start Over"):
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
             st.rerun()
@@ -634,16 +854,15 @@ elif st.session_state.get("path") == "generate":
 # ─────────────────────────────────────────
 elif st.session_state.get("path") == "evaluate":
 
-    st.header("📊 Evaluate Your Documents")
-    st.write("Reviewing your documents against the job posting...")
+    st.markdown("## Evaluating Your Documents")
+    st.caption("Scoring your documents against the job posting...")
 
     cv_text = st.session_state.get("cv_text_for_eval", "")
     cl_text = st.session_state.get("cl_text_for_eval", "")
     cv_input_method = st.session_state.get("cv_input_method", "Skip")
     cl_input_method = st.session_state.get("cl_input_method", "Skip")
 
-    with st.spinner("Evaluating your documents... "
-                    "this may take 30-60 seconds."):
+    with st.spinner("Evaluating your documents... this may take 30-60 seconds."):
         try:
             if "path2_results" not in st.session_state:
                 results = {}
@@ -683,30 +902,29 @@ elif st.session_state.get("path") == "evaluate":
         results = st.session_state["path2_results"]
 
         if "resume_report" in results:
-            st.subheader("📋 Resume Evaluation Report")
+            st.markdown("### Resume Evaluation Report")
             if results.get("cv_input_method") == "Paste as text":
-                st.info("ℹ️ Visual Structure was not evaluated because text "
+                st.info("Visual Structure was not evaluated because text "
                         "was pasted instead of a file being uploaded.")
             st.markdown(results["resume_report"])
             st.divider()
 
         if "cl_report" in results:
-            st.subheader("✉️ Cover Letter Evaluation Report")
+            st.markdown("### Cover Letter Evaluation Report")
             if results.get("cl_input_method") == "Paste as text":
-                st.info("ℹ️ Visual Structure was not evaluated because text "
+                st.info("Visual Structure was not evaluated because text "
                         "was pasted instead of a file being uploaded.")
             st.markdown(results["cl_report"])
             st.divider()
 
         if "consistency_report" in results:
-            st.subheader("🔗 Consistency Check")
-            st.write("This section checks whether your resume and cover "
-                     "letter are aligned in tone, keywords, and messaging.")
+            st.markdown("### Consistency Check")
+            st.caption("Are your resume and cover letter aligned in tone, "
+                       "keywords, and messaging?")
             st.markdown(results["consistency_report"])
             st.divider()
 
-        st.write("Would you like to generate new tailored documents instead?")
-        if st.button("✨ Switch to Generate New Documents"):
+        if st.button("Switch to Generate New Documents", type="primary"):
             for key in ["path", "path2_results"]:
                 if key in st.session_state:
                     del st.session_state[key]
@@ -715,7 +933,7 @@ elif st.session_state.get("path") == "evaluate":
             st.rerun()
 
     st.divider()
-    if st.button("🔁 Start Over"):
+    if st.button("Start Over"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.rerun()
