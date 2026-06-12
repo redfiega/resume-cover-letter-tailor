@@ -46,7 +46,6 @@ st.markdown("""
         border-radius: 6px !important;
         background-color: #f9f9f9 !important;
     }
-    /* Path 1 button — solid blue */
     div[data-testid="stColumn"]:first-child button[kind="primary"] {
         background-color: #0065A4 !important;
         border-color: #0065A4 !important;
@@ -55,8 +54,6 @@ st.markdown("""
     div[data-testid="stColumn"]:first-child button[kind="primary"]:hover {
         background-color: #004f82 !important;
     }
-    /* Path 2 button — outlined blue */
-    div[data-testid="stColumn"]:last-child button[kind="secondaryFormSubmit"],
     div[data-testid="stColumn"]:last-child button {
         background-color: #f0f7ff !important;
         border: 2px solid #0065A4 !important;
@@ -70,31 +67,93 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📄 Resume & Cover Letter Tailor")
-st.write("Upload your CV and a job posting to get started.")
+st.write("Provide your documents and a job posting to get started.")
 
 # ─────────────────────────────────────────
 # HOMEPAGE — INPUTS
 # ─────────────────────────────────────────
 if st.session_state.get("path") is None:
 
-    st.header("Step 1 — Upload Your CV and Job Posting")
+    st.header("Step 1 — Provide Your Documents")
 
-    col1, col2 = st.columns(2)
+    # CV or Resume input
+    st.subheader("📋 Your CV or Resume (required for generating new documents)")
+    cv_input_method = st.radio(
+        "How would you like to provide your CV or Resume?",
+        ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
+        horizontal=True,
+        key="cv_input_method"
+    )
 
-    with col1:
+    cv_text = ""
+    cv_file_name = ""
+
+    if cv_input_method == "Upload a file (PDF or Word)":
         uploaded_cv = st.file_uploader(
-            "Upload your CV (PDF or Word)",
+            "Upload your CV or Resume (PDF or Word)",
             type=["pdf", "docx"],
-            help="Upload your full CV in PDF or Word format"
+            key="cv_upload"
+        )
+        if uploaded_cv:
+            with st.spinner("Reading your document..."):
+                try:
+                    cv_text = extract_cv_text(uploaded_cv)
+                    cv_file_name = uploaded_cv.name
+                    st.success(f"✅ {uploaded_cv.name} uploaded successfully!")
+                except Exception as e:
+                    st.error(f"Could not read the file: {e}")
+
+    elif cv_input_method == "Paste as text":
+        cv_text = st.text_area(
+            "Paste your CV or Resume here:",
+            placeholder="Paste the full text of your CV or Resume here...",
+            height=300,
+            key="cv_paste"
         )
 
-    with col2:
-        job_posting = st.text_area(
-            "Paste the job posting here:",
-            placeholder="Copy and paste the full job description here...",
-            height=300
+    # Cover letter input
+    st.subheader("✉️ Existing Cover Letter (optional)")
+    cl_input_method = st.radio(
+        "How would you like to provide your cover letter?",
+        ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
+        horizontal=True,
+        key="cl_input_method_home"
+    )
+
+    cl_text = ""
+
+    if cl_input_method == "Upload a file (PDF or Word)":
+        uploaded_cl = st.file_uploader(
+            "Upload your cover letter (PDF or Word)",
+            type=["pdf", "docx"],
+            key="cl_upload_home"
+        )
+        if uploaded_cl:
+            with st.spinner("Reading your cover letter..."):
+                try:
+                    cl_text = extract_cv_text(uploaded_cl)
+                    st.success(f"✅ {uploaded_cl.name} uploaded successfully!")
+                except Exception as e:
+                    st.error(f"Could not read the file: {e}")
+
+    elif cl_input_method == "Paste as text":
+        cl_text = st.text_area(
+            "Paste your cover letter here:",
+            placeholder="Paste the full text of your cover letter here...",
+            height=200,
+            key="cl_paste_home"
         )
 
+    # Job posting input
+    st.subheader("📌 Job Posting (required)")
+    job_posting = st.text_area(
+        "Paste the job posting here:",
+        placeholder="Copy and paste the full job description here...",
+        height=300,
+        key="job_posting_input"
+    )
+
+    # Path selection
     st.header("Step 2 — Choose Your Path")
     st.write("What would you like to do?")
 
@@ -102,26 +161,26 @@ if st.session_state.get("path") is None:
 
     with col_a:
         if st.button(
-            "✨ Build My Documents\n\nUpload your CV and a job posting. "
-            "Answer a few questions. Get a tailored resume and cover letter "
-            "ready to download.",
+            "✨ Build My Documents\n\nGenerate a new tailored resume and/or "
+            "cover letter based on your CV and the job posting.",
             type="primary",
             use_container_width=True,
             key="path1_button"
         ):
-            if not uploaded_cv:
-                st.warning("Please upload your CV before continuing.")
+            if not cv_text.strip():
+                st.warning("Please provide your CV or Resume before "
+                           "generating new documents.")
             elif not job_posting.strip():
                 st.warning("Please paste a job posting before continuing.")
             else:
-                with st.spinner("Reading your CV and analyzing the job "
-                                "posting... this may take 20-30 seconds."):
+                with st.spinner("Reading your documents and analyzing the "
+                                "job posting... this may take 20-30 seconds."):
                     try:
-                        cv_raw_text = extract_cv_text(uploaded_cv)
-                        cv_content = parse_cv(cv_raw_text)
+                        cv_content = parse_cv(cv_text)
                         job_analysis = analyze_job_posting(job_posting)
                         questions = generate_questions(cv_content, job_analysis)
                         st.session_state["cv_content"] = cv_content
+                        st.session_state["cl_content"] = cl_text
                         st.session_state["job_analysis"] = job_analysis
                         st.session_state["job_posting"] = job_posting
                         st.session_state["questions"] = questions
@@ -133,20 +192,25 @@ if st.session_state.get("path") is None:
 
     with col_b:
         if st.button(
-            "📊 Evaluate My Documents\n\nAlready have a resume or cover letter? "
-            "Upload it and get scored feedback across five dimensions based "
-            "on the job posting.",
+            "📊 Evaluate My Documents\n\nGet scored feedback on your existing "
+            "resume and/or cover letter based on the job posting.",
             use_container_width=True,
             key="path2_button"
         ):
             if not job_posting.strip():
                 st.warning("Please paste a job posting before continuing.")
+            elif not cv_text.strip() and not cl_text.strip():
+                st.warning("Please provide at least one document to evaluate.")
             else:
                 with st.spinner("Analyzing the job posting..."):
                     try:
                         job_analysis = analyze_job_posting(job_posting)
                         st.session_state["job_analysis"] = job_analysis
                         st.session_state["job_posting"] = job_posting
+                        st.session_state["cv_text_for_eval"] = cv_text
+                        st.session_state["cl_text_for_eval"] = cl_text
+                        st.session_state["cv_input_method"] = cv_input_method
+                        st.session_state["cl_input_method"] = cl_input_method
                         st.session_state["path"] = "evaluate"
                         st.rerun()
                     except Exception as e:
@@ -216,7 +280,8 @@ elif st.session_state.get("path") == "generate":
                         background-color: {preview['background']};
                         padding: 4px 8px; margin: 0 0 8px 0;">Your Name</p>
                     <p style="font-size: 11px; color: #555; margin: 0 0 12px 0;">
-                        your.email@example.com | (555) 123-4567 | City, State</p>
+                        your.email@example.com | (555) 123-4567 | City, State
+                    </p>
                     <p style="font-size: 11px; font-weight: bold;
                         color: {preview['header_color']};
                         background-color: {preview['background']};
@@ -299,7 +364,9 @@ elif st.session_state.get("path") == "generate":
             with col1:
                 if st.button("Next ➡️", type="primary"):
                     if not current_answer.strip():
-                        st.warning("Please answer the question before continuing.")
+                        st.warning(
+                            "Please answer the question before continuing."
+                        )
                     else:
                         answers.append(current_answer)
                         st.session_state["question_answers"] = answers
@@ -323,10 +390,22 @@ elif st.session_state.get("path") == "generate":
                     try:
                         cv_content = st.session_state["cv_content"]
                         job_analysis = st.session_state["job_analysis"]
+                        cl_context = st.session_state.get("cl_content", "")
+
+                        # Add cover letter context if provided
+                        if cl_context.strip():
+                            user_answers_with_context = (
+                                user_answers +
+                                f"\n\nExisting cover letter for style/tone "
+                                f"reference:\n{cl_context}"
+                            )
+                        else:
+                            user_answers_with_context = user_answers
 
                         if st.session_state.get("generate_resume"):
                             resume_content = write_resume(
-                                cv_content, job_analysis, user_answers
+                                cv_content, job_analysis,
+                                user_answers_with_context
                             )
                             st.session_state["resume_content"] = resume_content
 
@@ -336,7 +415,7 @@ elif st.session_state.get("path") == "generate":
                             )
                             cover_letter_content = write_cover_letter(
                                 cv_content, job_analysis,
-                                user_answers, resume_for_cl
+                                user_answers_with_context, resume_for_cl
                             )
                             st.session_state["cover_letter_content"] = \
                                 cover_letter_content
@@ -444,7 +523,8 @@ elif st.session_state.get("path") == "generate":
         st.write("Get a scored evaluation report across five dimensions.")
 
         if st.button("📊 Evaluate My Documents"):
-            with st.spinner("Running evaluation... this may take 30-60 seconds."):
+            with st.spinner("Running evaluation... "
+                            "this may take 30-60 seconds."):
                 try:
                     results = {}
                     if st.session_state.get("generate_resume") and \
@@ -466,7 +546,8 @@ elif st.session_state.get("path") == "generate":
                     st.error(f"Something went wrong: {e}")
 
         if "evaluation_results" in st.session_state:
-            for doc_type, report in st.session_state["evaluation_results"].items():
+            for doc_type, report in \
+                    st.session_state["evaluation_results"].items():
                 st.subheader(f"Evaluation Report — {doc_type}")
                 st.markdown(report)
 
@@ -553,139 +634,57 @@ elif st.session_state.get("path") == "generate":
 # ─────────────────────────────────────────
 elif st.session_state.get("path") == "evaluate":
 
-    st.header("Evaluate Your Existing Documents")
-    st.write("Upload your resume and/or cover letter to get scored feedback "
-             "based on the job posting. Upload both for a consistency check.")
+    st.header("📊 Evaluate Your Documents")
+    st.write("Reviewing your documents against the job posting...")
 
-    # ── Resume input ──
-    st.subheader("📋 Resume (optional)")
-    resume_input_method = st.radio(
-        "How would you like to provide your resume?",
-        ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
-        horizontal=True,
-        key="resume_input_method"
-    )
+    cv_text = st.session_state.get("cv_text_for_eval", "")
+    cl_text = st.session_state.get("cl_text_for_eval", "")
+    cv_input_method = st.session_state.get("cv_input_method", "Skip")
+    cl_input_method = st.session_state.get("cl_input_method", "Skip")
 
-    resume_text = ""
-    resume_input_type = "none"
+    with st.spinner("Evaluating your documents... "
+                    "this may take 30-60 seconds."):
+        try:
+            if "path2_results" not in st.session_state:
+                results = {}
 
-    if resume_input_method == "Upload a file (PDF or Word)":
-        uploaded_resume = st.file_uploader(
-            "Upload your resume (PDF or Word)",
-            type=["pdf", "docx"],
-            key="resume_upload"
-        )
-        if uploaded_resume:
-            with st.spinner("Reading your resume..."):
-                try:
-                    resume_text = extract_cv_text(uploaded_resume)
-                    resume_input_type = "file"
-                    st.success("Resume uploaded successfully!")
-                except Exception as e:
-                    st.error(f"Could not read the file: {e}")
+                if cv_text.strip():
+                    resume_report = review_document(
+                        cv_text,
+                        st.session_state["job_analysis"],
+                        "Resume"
+                    )
+                    results["resume_report"] = resume_report
+                    results["cv_input_method"] = cv_input_method
 
-    elif resume_input_method == "Paste as text":
-        st.warning(
-            "⚠️ Note: Visual Structure cannot be evaluated from pasted text. "
-            "Upload a Word or PDF file for a complete evaluation."
-        )
-        resume_text = st.text_area(
-            "Paste your resume here:",
-            placeholder="Paste the full text of your resume here...",
-            height=300,
-            key="resume_paste"
-        )
-        resume_input_type = "text"
+                if cl_text.strip():
+                    cl_report = review_document(
+                        cl_text,
+                        st.session_state["job_analysis"],
+                        "Cover Letter"
+                    )
+                    results["cl_report"] = cl_report
+                    results["cl_input_method"] = cl_input_method
 
-    # ── Cover letter input ──
-    st.subheader("✉️ Cover Letter (optional)")
-    cl_input_method = st.radio(
-        "How would you like to provide your cover letter?",
-        ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
-        horizontal=True,
-        key="cl_input_method"
-    )
+                if cv_text.strip() and cl_text.strip():
+                    consistency = review_document(
+                        f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
+                        st.session_state["job_analysis"],
+                        "Resume and Cover Letter Consistency"
+                    )
+                    results["consistency_report"] = consistency
 
-    cl_text = ""
-    cl_input_type = "none"
+                st.session_state["path2_results"] = results
 
-    if cl_input_method == "Upload a file (PDF or Word)":
-        uploaded_cl = st.file_uploader(
-            "Upload your cover letter (PDF or Word)",
-            type=["pdf", "docx"],
-            key="cl_upload"
-        )
-        if uploaded_cl:
-            with st.spinner("Reading your cover letter..."):
-                try:
-                    cl_text = extract_cv_text(uploaded_cl)
-                    cl_input_type = "file"
-                    st.success("Cover letter uploaded successfully!")
-                except Exception as e:
-                    st.error(f"Could not read the file: {e}")
+        except Exception as e:
+            st.error(f"Something went wrong: {e}")
 
-    elif cl_input_method == "Paste as text":
-        st.warning(
-            "⚠️ Note: Visual Structure cannot be evaluated from pasted text. "
-            "Upload a Word or PDF file for a complete evaluation."
-        )
-        cl_text = st.text_area(
-            "Paste your cover letter here:",
-            placeholder="Paste the full text of your cover letter here...",
-            height=300,
-            key="cl_paste"
-        )
-        cl_input_type = "text"
-
-    if st.button("📊 Evaluate", type="primary"):
-        if not resume_text.strip() and not cl_text.strip():
-            st.warning("Please provide at least one document before evaluating.")
-        else:
-            with st.spinner("Evaluating your documents... "
-                            "this may take 30-60 seconds."):
-                try:
-                    results = {}
-
-                    # Evaluate resume
-                    if resume_text.strip():
-                        resume_report = review_document(
-                            resume_text,
-                            st.session_state["job_analysis"],
-                            "Resume"
-                        )
-                        results["resume_report"] = resume_report
-                        results["resume_input_type"] = resume_input_type
-
-                    # Evaluate cover letter
-                    if cl_text.strip():
-                        cl_report = review_document(
-                            cl_text,
-                            st.session_state["job_analysis"],
-                            "Cover Letter"
-                        )
-                        results["cl_report"] = cl_report
-                        results["cl_input_type"] = cl_input_type
-
-                    # Consistency check if both provided
-                    if resume_text.strip() and cl_text.strip():
-                        consistency = review_document(
-                            f"RESUME:\n{resume_text}\n\nCOVER LETTER:\n{cl_text}",
-                            st.session_state["job_analysis"],
-                            "Resume and Cover Letter Consistency"
-                        )
-                        results["consistency_report"] = consistency
-
-                    st.session_state["path2_results"] = results
-                except Exception as e:
-                    st.error(f"Something went wrong: {e}")
-
-    # Display results
     if "path2_results" in st.session_state:
         results = st.session_state["path2_results"]
 
         if "resume_report" in results:
             st.subheader("📋 Resume Evaluation Report")
-            if results.get("resume_input_type") == "text":
+            if results.get("cv_input_method") == "Paste as text":
                 st.info("ℹ️ Visual Structure was not evaluated because text "
                         "was pasted instead of a file being uploaded.")
             st.markdown(results["resume_report"])
@@ -693,7 +692,7 @@ elif st.session_state.get("path") == "evaluate":
 
         if "cl_report" in results:
             st.subheader("✉️ Cover Letter Evaluation Report")
-            if results.get("cl_input_type") == "text":
+            if results.get("cl_input_method") == "Paste as text":
                 st.info("ℹ️ Visual Structure was not evaluated because text "
                         "was pasted instead of a file being uploaded.")
             st.markdown(results["cl_report"])
@@ -711,6 +710,8 @@ elif st.session_state.get("path") == "evaluate":
             for key in ["path", "path2_results"]:
                 if key in st.session_state:
                     del st.session_state[key]
+            st.session_state["path"] = "generate"
+            st.session_state["step"] = "style"
             st.rerun()
 
     st.divider()
