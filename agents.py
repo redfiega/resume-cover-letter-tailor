@@ -1,15 +1,10 @@
 import anthropic
 import os
 from dotenv import load_dotenv
-import streamlit as st
 
 load_dotenv()
 
-try:
-    api_key = st.secrets["ANTHROPIC_API_KEY"]
-except Exception:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-
+api_key = os.getenv("ANTHROPIC_API_KEY")
 client = anthropic.Anthropic(api_key=api_key)
 
 # Model names for each tier

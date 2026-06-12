@@ -1,5 +1,16 @@
 import streamlit as st
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Handle API key for both local and Streamlit Cloud
+if "ANTHROPIC_API_KEY" not in os.environ:
+    try:
+        os.environ["ANTHROPIC_API_KEY"] = st.secrets["ANTHROPIC_API_KEY"]
+    except Exception:
+        pass
+
 from cv_parser import extract_cv_text
 from agents import (
     analyze_job_posting,
