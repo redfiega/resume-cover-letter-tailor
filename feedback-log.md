@@ -186,3 +186,43 @@
 - Ready for deployment
 
 ---
+
+## Session 7 — MCP Tool Use Implementation
+
+**Date:** 2026-06-19
+
+**Instructor feedback received:**
+- The multi-model pipeline was praised but MCP tool use was missing
+- Agents were being called by Python in a fixed sequence rather than
+  being called by the model itself
+- Required: at least one tool defined with a name, description, and
+  input schema passed via the tools= parameter where the model
+  autonomously decides to invoke it
+
+**Changes applied:**
+
+**Smart Evaluate Tool (model-callable)**
+- Added smart_evaluate() function to agents.py
+- Defined two model-callable tools with full JSON schemas:
+  evaluate_resume_fit and evaluate_cover_letter_fit
+- Tools are passed to Claude Opus via the tools= parameter
+- Claude autonomously decides which tools to call based on what
+  documents are available
+- Python executes the tool when Claude calls it and returns results
+- Claude synthesizes a final evaluation report from the tool results
+- This satisfies both the tool use and agentic behavior requirements
+
+**UI improvements**
+- Review page restructured into two tabs:
+  Tab 1 — Your Documents and Download
+  Tab 2 — Smart Evaluation Tool
+- Tab hint added so users notice the two tabs
+- Tab size increased for better visibility
+- Progress bar fixed — no longer shows on Review page
+
+**Bug fixes**
+- Bold style document builder error fixed (RGBColor shading issue)
+- Inline bold markdown now parsed correctly in all document styles
+- Step indicator simplified and corrected across all pages
+
+---
