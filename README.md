@@ -15,7 +15,27 @@ questions, and download polished, job-ready Word documents.
 - **Asks** targeted clarifying questions to capture context the CV alone cannot provide
 - **Generates** a tailored resume and/or cover letter as downloadable Word documents
 - **Accepts feedback** on content and visual structure and revises documents accordingly
+- **Evaluates** documents using a Smart Evaluation Tool powered by model-driven
+  tool calling — Claude autonomously decides which evaluation tools to invoke
+  based on the documents provided, rather than following a hardcoded sequence
 - **Repeats** the revision cycle until you are satisfied with the output
+
+## Agentic Tool Use
+
+The Smart Evaluation Tool demonstrates genuine agentic behavior using the
+Anthropic tool use API. Two tools are defined with full JSON schemas and passed
+to Claude Opus via the `tools=` parameter:
+
+- **`evaluate_resume_fit`** — evaluates how well a resume matches a job posting
+  across five dimensions
+- **`evaluate_cover_letter_fit`** — evaluates how well a cover letter matches
+  a job posting across five dimensions
+
+Claude autonomously decides which tools to call based on what documents are
+available. Python executes the tool when Claude calls it and returns the results.
+Claude then synthesizes a final evaluation report from the tool outputs. This
+satisfies the model-driven tool selection requirement — the model, not Python,
+is making the decisions.
 
 ---
 
