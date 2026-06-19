@@ -226,3 +226,23 @@
 - Step indicator simplified and corrected across all pages
 
 ---
+
+## Session 8 — Path 2 Smart Evaluate and UI Refinements
+
+**Date:** 2026-06-19
+
+**Changes applied:**
+
+**Path 2 now uses Smart Evaluate**
+- Replaced the structured evaluation pipeline in Path 2 with smart_evaluate()
+- When user clicks "Evaluate My Documents" on the homepage, Claude
+  autonomously decides which tools to call based on the documents provided
+- Results display as a Smart Evaluation Report on a clean single page
+- No tabs needed for Path 2 since it is evaluation-only
+
+**UI refinements**
+- Tab size increased for better visibility on the Review page
+- Progress bar fixed — questions step indicator no longer shows on Review page
+- Path 2 evaluation page simplified to a single clean report view
+
+---

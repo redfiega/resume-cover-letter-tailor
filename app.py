@@ -96,7 +96,7 @@ st.markdown("""
     }
     div[data-testid="stTabs"] button {
         font-size: 1.1rem !important;
-        font-weight: 900 !important;
+        font-weight: 700 !important;
         padding: 12px 28px !important;
     }
     </style>
@@ -178,7 +178,6 @@ if st.session_state.get("path") is None:
         </div>
     """, unsafe_allow_html=True)
 
-    # CV or Resume input
     st.markdown("### Your CV or Resume")
     cv_input_method = st.radio(
         "How would you like to provide your CV or Resume?",
@@ -213,7 +212,6 @@ if st.session_state.get("path") is None:
             key=f"cv_paste_{sc}"
         )
 
-    # Cover letter input
     st.markdown("### Existing Cover Letter *(optional)*")
     cl_input_method = st.radio(
         "How would you like to provide your cover letter?",
@@ -246,7 +244,6 @@ if st.session_state.get("path") is None:
             key=f"cl_paste_home_{sc}"
         )
 
-    # Job posting input
     st.markdown("### Job Posting")
     job_posting = st.text_area(
         "Paste the job posting here:",
@@ -255,7 +252,6 @@ if st.session_state.get("path") is None:
         key=f"job_posting_input_{sc}"
     )
 
-    # Path selection
     st.markdown("### Choose Your Path")
 
     col_a, col_b = st.columns(2)
@@ -614,7 +610,6 @@ elif st.session_state.get("path") == "generate":
             </div>
         """, unsafe_allow_html=True)
 
-        # Tab hint
         st.markdown("""
             <div style="
                 background-color: #f0f7ff;
@@ -634,9 +629,7 @@ elif st.session_state.get("path") == "generate":
             "📊  Smart Evaluation Tool"
         ])
 
-        # ── TAB 1 — Documents and Download ──
         with tab_docs:
-
             st.markdown("## Review Your Documents")
             st.caption("Review and request changes before downloading.")
 
@@ -801,9 +794,7 @@ elif st.session_state.get("path") == "generate":
                 st.session_state["session_count"] = count
                 st.rerun()
 
-        # ── TAB 2 — Smart Evaluation ──
         with tab_eval:
-
             st.markdown("""
                 <div style="margin-bottom: 8px; margin-top: 12px;">
                     <span style="color: #0065A4; font-size: 1.3rem;
@@ -856,100 +847,36 @@ elif st.session_state.get("path") == "generate":
 elif st.session_state.get("path") == "evaluate":
 
     st.markdown("## Evaluating Your Documents")
-    st.caption("Scoring your documents against the job posting...")
+    st.caption("Claude is analyzing your documents against the job posting...")
 
     cv_text = st.session_state.get("cv_text_for_eval", "")
     cl_text = st.session_state.get("cl_text_for_eval", "")
-    cv_input_method = st.session_state.get("cv_input_method", "Skip")
-    cl_input_method = st.session_state.get("cl_input_method", "Skip")
 
-    with st.spinner("Evaluating your documents... this may take 30-60 seconds."):
-        try:
-            if "path2_results" not in st.session_state:
-                results = {}
-
-                if cv_text.strip():
-                    if cv_input_method == "Paste as text":
-                        resume_report = review_document_no_visual(
-                            cv_text,
-                            st.session_state["job_analysis"],
-                            "Resume"
-                        )
-                    else:
-                        resume_report = review_document(
-                            cv_text,
-                            st.session_state["job_analysis"],
-                            "Resume"
-                        )
-                    results["resume_report"] = resume_report
-                    results["cv_input_method"] = cv_input_method
-
-                if cl_text.strip():
-                    if cl_input_method == "Paste as text":
-                        cl_report = review_document_no_visual(
-                            cl_text,
-                            st.session_state["job_analysis"],
-                            "Cover Letter"
-                        )
-                    else:
-                        cl_report = review_document(
-                            cl_text,
-                            st.session_state["job_analysis"],
-                            "Cover Letter"
-                        )
-                    results["cl_report"] = cl_report
-                    results["cl_input_method"] = cl_input_method
-
-                if cv_text.strip() and cl_text.strip():
-                    either_pasted = (
-                        cv_input_method == "Paste as text" or
-                        cl_input_method == "Paste as text"
-                    )
-                    if either_pasted:
-                        consistency = review_document_no_visual(
-                            f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
-                            st.session_state["job_analysis"],
-                            "Resume and Cover Letter Consistency"
-                        )
-                    else:
-                        consistency = review_document(
-                            f"RESUME:\n{cv_text}\n\nCOVER LETTER:\n{cl_text}",
-                            st.session_state["job_analysis"],
-                            "Resume and Cover Letter Consistency"
-                        )
-                    results["consistency_report"] = consistency
-
-                st.session_state["path2_results"] = results
-
-        except Exception as e:
-            st.error(f"Something went wrong: {e}")
+    if "path2_results" not in st.session_state:
+        with st.spinner("Claude is deciding how to evaluate your documents... "
+                        "this may take 30-60 seconds."):
+            try:
+                evaluation = smart_evaluate(
+                    cv_text,
+                    cl_text,
+                    st.session_state["job_analysis"]
+                )
+                st.session_state["path2_results"] = evaluation
+            except Exception as e:
+                st.error(f"Something went wrong: {e}")
+                import traceback
+                st.error(traceback.format_exc())
 
     if "path2_results" in st.session_state:
-        results = st.session_state["path2_results"]
+        st.markdown("""
+            <div style="margin-bottom: 8px; margin-top: 12px;">
+                <span style="color: #0065A4; font-size: 1.3rem;
+                    font-weight: 700;">Smart Evaluation Report</span>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown(st.session_state["path2_results"])
 
-        if "resume_report" in results:
-            st.markdown("### Resume Evaluation Report")
-            if results.get("cv_input_method") == "Paste as text":
-                st.info("Visual Structure was not evaluated because text "
-                        "was pasted instead of a file being uploaded.")
-            st.markdown(results["resume_report"])
-            st.divider()
-
-        if "cl_report" in results:
-            st.markdown("### Cover Letter Evaluation Report")
-            if results.get("cl_input_method") == "Paste as text":
-                st.info("Visual Structure was not evaluated because text "
-                        "was pasted instead of a file being uploaded.")
-            st.markdown(results["cl_report"])
-            st.divider()
-
-        if "consistency_report" in results:
-            st.markdown("### Consistency Check")
-            st.caption("Are your resume and cover letter aligned in tone, "
-                       "keywords, and messaging?")
-            st.markdown(results["consistency_report"])
-            st.divider()
-
+        st.divider()
         if st.button("Switch to Generate New Documents", type="primary"):
             count = st.session_state.get("session_count", 0) + 1
             st.session_state.clear()
