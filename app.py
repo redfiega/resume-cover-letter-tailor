@@ -19,6 +19,7 @@ from agents import (
     write_cover_letter,
     review_document,
     review_document_no_visual,
+    smart_evaluate,
     revise_document
 )
 from document_builder import (
@@ -92,6 +93,11 @@ st.markdown("""
     div[data-testid="stVerticalBlock"] > div {
         padding-top: 0.2rem !important;
         padding-bottom: 0.2rem !important;
+    }
+    div[data-testid="stTabs"] button {
+        font-size: 1.1rem !important;
+        font-weight: 900 !important;
+        padding: 12px 28px !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -435,8 +441,7 @@ elif st.session_state.get("path") == "generate":
                 st.session_state["step"] = "questions"
                 st.rerun()
 
-    elif st.session_state.get("step") in ["questions", "generating",
-                                           "review", "revision"]:
+    elif st.session_state.get("step") in ["questions", "generating"]:
         st.markdown("""
             <div style="display: flex; gap: 8px; margin-bottom: 20px;
                 align-items: center; flex-wrap: wrap;">
@@ -609,198 +614,241 @@ elif st.session_state.get("path") == "generate":
             </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("## Review Your Documents")
-        st.caption("Review and request changes before downloading.")
+        # Tab hint
+        st.markdown("""
+            <div style="
+                background-color: #f0f7ff;
+                border-left: 4px solid #0065A4;
+                border-radius: 6px;
+                padding: 10px 16px;
+                margin-bottom: 12px;
+                font-size: 0.9rem;
+                color: #333;">
+                Use the tabs below to switch between reviewing your documents
+                and running a Smart Evaluation.
+            </div>
+        """, unsafe_allow_html=True)
 
-        if st.session_state.get("generate_resume") and \
-                "resume_content" in st.session_state:
-            st.markdown("### Your Tailored Resume")
-            st.markdown(st.session_state["resume_content"])
+        tab_docs, tab_eval = st.tabs([
+            "📋  Your Documents & Download",
+            "📊  Smart Evaluation Tool"
+        ])
 
-            st.markdown("""
-                <div style="border: 2px solid #0065A4; border-radius: 8px;
-                    padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
-                    <strong>Provide Feedback on Your Resume</strong><br>
-                    <span style="font-size: 0.9rem; color: #555;">
-                    Request changes to content or formatting below.</span>
-                </div>
-            """, unsafe_allow_html=True)
+        # ── TAB 1 — Documents and Download ──
+        with tab_docs:
 
-            resume_feedback = st.text_area(
-                "What would you like to change?",
-                placeholder="Example: Make the summary shorter. "
-                            "Move education to the top.",
-                height=80,
-                key="resume_feedback"
-            )
+            st.markdown("## Review Your Documents")
+            st.caption("Review and request changes before downloading.")
 
-            if st.button("Revise Resume"):
-                if not resume_feedback.strip():
-                    st.warning("Please enter feedback before revising.")
-                else:
-                    with st.spinner("Revising your resume..."):
-                        try:
-                            revised = revise_document(
-                                st.session_state["resume_content"],
-                                resume_feedback,
-                                st.session_state["job_analysis"]
-                            )
-                            st.session_state["resume_content"] = revised
-                            st.session_state["step"] = "revision"
-                            st.success("Resume revised!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Something went wrong: {e}")
-
-        if st.session_state.get("generate_cover_letter") and \
-                "cover_letter_content" in st.session_state:
-            st.markdown("### Your Tailored Cover Letter")
-            st.markdown(st.session_state["cover_letter_content"])
-
-            st.markdown("""
-                <div style="border: 2px solid #0065A4; border-radius: 8px;
-                    padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
-                    <strong>Provide Feedback on Your Cover Letter</strong><br>
-                    <span style="font-size: 0.9rem; color: #555;">
-                    Request changes to content or formatting below.</span>
-                </div>
-            """, unsafe_allow_html=True)
-
-            cl_feedback = st.text_area(
-                "What would you like to change?",
-                placeholder="Example: Make the opening more engaging. "
-                            "Shorten the second paragraph.",
-                height=80,
-                key="cl_feedback"
-            )
-
-            if st.button("Revise Cover Letter"):
-                if not cl_feedback.strip():
-                    st.warning("Please enter feedback before revising.")
-                else:
-                    with st.spinner("Revising your cover letter..."):
-                        try:
-                            revised = revise_document(
-                                st.session_state["cover_letter_content"],
-                                cl_feedback,
-                                st.session_state["job_analysis"]
-                            )
-                            st.session_state["cover_letter_content"] = revised
-                            st.session_state["step"] = "revision"
-                            st.success("Cover letter revised!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Something went wrong: {e}")
-
-        st.divider()
-        st.markdown("### Optional — Evaluate Your Documents")
-        st.caption("Get a scored report across five dimensions.")
-
-        if st.button("Evaluate My Documents"):
-            with st.spinner("Running evaluation... this may take 30-60 seconds."):
-                try:
-                    results = {}
-                    if st.session_state.get("generate_resume") and \
-                            "resume_content" in st.session_state:
-                        results["Resume"] = review_document(
-                            st.session_state["resume_content"],
-                            st.session_state["job_analysis"],
-                            "Resume"
-                        )
-                    if st.session_state.get("generate_cover_letter") and \
-                            "cover_letter_content" in st.session_state:
-                        results["Cover Letter"] = review_document(
-                            st.session_state["cover_letter_content"],
-                            st.session_state["job_analysis"],
-                            "Cover Letter"
-                        )
-                    st.session_state["evaluation_results"] = results
-                except Exception as e:
-                    st.error(f"Something went wrong: {e}")
-
-        if "evaluation_results" in st.session_state:
-            for doc_type, report in \
-                    st.session_state["evaluation_results"].items():
-                st.markdown(f"#### Evaluation Report — {doc_type}")
-                st.markdown(report)
-
-        st.divider()
-        st.markdown("## Download Your Documents")
-        st.caption("When you are happy with your documents, download them below.")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
             if st.session_state.get("generate_resume") and \
                     "resume_content" in st.session_state:
-                if st.button("Build Resume for Download", type="primary"):
-                    with st.spinner("Building Word document..."):
-                        try:
-                            output_path = os.path.join(
-                                "outputs", "resumes", "tailored_resume.docx"
-                            )
-                            os.makedirs(
-                                os.path.dirname(output_path), exist_ok=True
-                            )
-                            build_resume_document(
-                                st.session_state["resume_content"],
-                                output_path,
-                                style_name=st.session_state.get(
-                                    "selected_style", "Modern"
-                                )
-                            )
-                            with open(output_path, "rb") as f:
-                                st.download_button(
-                                    label="Download Resume (.docx)",
-                                    data=f,
-                                    file_name="tailored_resume.docx",
-                                    mime="application/vnd.openxmlformats-"
-                                         "officedocument.wordprocessingml"
-                                         ".document",
-                                    key="download_resume"
-                                )
-                        except Exception as e:
-                            st.error(f"Something went wrong: {e}")
+                st.markdown("### Your Tailored Resume")
+                st.markdown(st.session_state["resume_content"])
 
-        with col2:
+                st.markdown("""
+                    <div style="border: 2px solid #0065A4; border-radius: 8px;
+                        padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
+                        <strong>Provide Feedback on Your Resume</strong><br>
+                        <span style="font-size: 0.9rem; color: #555;">
+                        Request changes to content or formatting below.</span>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                resume_feedback = st.text_area(
+                    "What would you like to change?",
+                    placeholder="Example: Make the summary shorter. "
+                                "Move education to the top.",
+                    height=80,
+                    key="resume_feedback"
+                )
+
+                if st.button("Revise Resume"):
+                    if not resume_feedback.strip():
+                        st.warning("Please enter feedback before revising.")
+                    else:
+                        with st.spinner("Revising your resume..."):
+                            try:
+                                revised = revise_document(
+                                    st.session_state["resume_content"],
+                                    resume_feedback,
+                                    st.session_state["job_analysis"]
+                                )
+                                st.session_state["resume_content"] = revised
+                                st.session_state["step"] = "revision"
+                                st.success("Resume revised!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Something went wrong: {e}")
+
             if st.session_state.get("generate_cover_letter") and \
                     "cover_letter_content" in st.session_state:
-                if st.button("Build Cover Letter for Download"):
-                    with st.spinner("Building Word document..."):
-                        try:
-                            output_path = os.path.join(
-                                "outputs", "cover-letters",
-                                "tailored_cover_letter.docx"
-                            )
-                            os.makedirs(
-                                os.path.dirname(output_path), exist_ok=True
-                            )
-                            build_cover_letter_document(
-                                st.session_state["cover_letter_content"],
-                                output_path,
-                                style_name=st.session_state.get(
-                                    "selected_style", "Modern"
-                                )
-                            )
-                            with open(output_path, "rb") as f:
-                                st.download_button(
-                                    label="Download Cover Letter (.docx)",
-                                    data=f,
-                                    file_name="tailored_cover_letter.docx",
-                                    mime="application/vnd.openxmlformats-"
-                                         "officedocument.wordprocessingml"
-                                         ".document",
-                                    key="download_cover_letter"
-                                )
-                        except Exception as e:
-                            st.error(f"Something went wrong: {e}")
+                st.markdown("### Your Tailored Cover Letter")
+                st.markdown(st.session_state["cover_letter_content"])
 
-        st.divider()
-        if st.button("Start Over", key="start_over_p1"):
-            count = st.session_state.get("session_count", 0) + 1
-            st.session_state.clear()
-            st.session_state["session_count"] = count
-            st.rerun()
+                st.markdown("""
+                    <div style="border: 2px solid #0065A4; border-radius: 8px;
+                        padding: 12px; margin: 10px 0; background-color: #f0f7ff;">
+                        <strong>Provide Feedback on Your Cover Letter</strong><br>
+                        <span style="font-size: 0.9rem; color: #555;">
+                        Request changes to content or formatting below.</span>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                cl_feedback = st.text_area(
+                    "What would you like to change?",
+                    placeholder="Example: Make the opening more engaging. "
+                                "Shorten the second paragraph.",
+                    height=80,
+                    key="cl_feedback"
+                )
+
+                if st.button("Revise Cover Letter"):
+                    if not cl_feedback.strip():
+                        st.warning("Please enter feedback before revising.")
+                    else:
+                        with st.spinner("Revising your cover letter..."):
+                            try:
+                                revised = revise_document(
+                                    st.session_state["cover_letter_content"],
+                                    cl_feedback,
+                                    st.session_state["job_analysis"]
+                                )
+                                st.session_state["cover_letter_content"] = \
+                                    revised
+                                st.session_state["step"] = "revision"
+                                st.success("Cover letter revised!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Something went wrong: {e}")
+
+            st.divider()
+            st.markdown("## Download Your Documents")
+            st.caption(
+                "When you are happy with your documents, download them below."
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.session_state.get("generate_resume") and \
+                        "resume_content" in st.session_state:
+                    if st.button("Build Resume for Download", type="primary"):
+                        with st.spinner("Building Word document..."):
+                            try:
+                                output_path = os.path.join(
+                                    "outputs", "resumes", "tailored_resume.docx"
+                                )
+                                os.makedirs(
+                                    os.path.dirname(output_path), exist_ok=True
+                                )
+                                build_resume_document(
+                                    st.session_state["resume_content"],
+                                    output_path,
+                                    style_name=st.session_state.get(
+                                        "selected_style", "Modern"
+                                    )
+                                )
+                                with open(output_path, "rb") as f:
+                                    st.download_button(
+                                        label="Download Resume (.docx)",
+                                        data=f,
+                                        file_name="tailored_resume.docx",
+                                        mime="application/vnd.openxmlformats-"
+                                             "officedocument.wordprocessingml"
+                                             ".document",
+                                        key="download_resume"
+                                    )
+                            except Exception as e:
+                                st.error(f"Something went wrong: {e}")
+
+            with col2:
+                if st.session_state.get("generate_cover_letter") and \
+                        "cover_letter_content" in st.session_state:
+                    if st.button("Build Cover Letter for Download"):
+                        with st.spinner("Building Word document..."):
+                            try:
+                                output_path = os.path.join(
+                                    "outputs", "cover-letters",
+                                    "tailored_cover_letter.docx"
+                                )
+                                os.makedirs(
+                                    os.path.dirname(output_path), exist_ok=True
+                                )
+                                build_cover_letter_document(
+                                    st.session_state["cover_letter_content"],
+                                    output_path,
+                                    style_name=st.session_state.get(
+                                        "selected_style", "Modern"
+                                    )
+                                )
+                                with open(output_path, "rb") as f:
+                                    st.download_button(
+                                        label="Download Cover Letter (.docx)",
+                                        data=f,
+                                        file_name="tailored_cover_letter.docx",
+                                        mime="application/vnd.openxmlformats-"
+                                             "officedocument.wordprocessingml"
+                                             ".document",
+                                        key="download_cover_letter"
+                                    )
+                            except Exception as e:
+                                st.error(f"Something went wrong: {e}")
+
+            st.divider()
+            if st.button("Start Over", key="start_over_p1"):
+                count = st.session_state.get("session_count", 0) + 1
+                st.session_state.clear()
+                st.session_state["session_count"] = count
+                st.rerun()
+
+        # ── TAB 2 — Smart Evaluation ──
+        with tab_eval:
+
+            st.markdown("""
+                <div style="margin-bottom: 8px; margin-top: 12px;">
+                    <span style="color: #0065A4; font-size: 1.3rem;
+                        font-weight: 700;">Smart Evaluation Tool</span>
+                    <span style="color: #888; font-size: 0.85rem;
+                        font-weight: 400;"> (optional)</span>
+                </div>
+                <p style="color: #555; font-size: 0.9rem; margin-top: 0;">
+                    Claude will analyze your documents and decide how to
+                    evaluate them based on what you generated.
+                </p>
+            """, unsafe_allow_html=True)
+
+            if st.button("Smart Evaluate My Documents", type="primary"):
+                with st.spinner("Claude is analyzing your documents... "
+                                "this may take 30-60 seconds."):
+                    try:
+                        resume_content = st.session_state.get(
+                            "resume_content", ""
+                        ) if st.session_state.get("generate_resume") else ""
+                        cover_letter_content = st.session_state.get(
+                            "cover_letter_content", ""
+                        ) if st.session_state.get(
+                            "generate_cover_letter") else ""
+
+                        evaluation = smart_evaluate(
+                            resume_content,
+                            cover_letter_content,
+                            st.session_state["job_analysis"]
+                        )
+                        st.session_state["smart_evaluation"] = evaluation
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
+
+            if "smart_evaluation" in st.session_state:
+                st.markdown("""
+                    <div style="
+                        border-left: 4px solid #0065A4;
+                        border-radius: 6px;
+                        padding: 2px 16px;
+                        margin: 12px 0;
+                        background-color: #f0f7ff;">
+                    </div>
+                """, unsafe_allow_html=True)
+                st.markdown(st.session_state["smart_evaluation"])
 
 # ─────────────────────────────────────────
 # PATH 2 — EVALUATE EXISTING DOCUMENTS
@@ -853,10 +901,6 @@ elif st.session_state.get("path") == "evaluate":
                     results["cl_input_method"] = cl_input_method
 
                 if cv_text.strip() and cl_text.strip():
-                    both_pasted = (
-                        cv_input_method == "Paste as text" and
-                        cl_input_method == "Paste as text"
-                    )
                     either_pasted = (
                         cv_input_method == "Paste as text" or
                         cl_input_method == "Paste as text"
