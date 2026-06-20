@@ -14,11 +14,19 @@ questions, and download polished, job-ready Word documents.
 - **Parses** your uploaded CV to understand your experience and qualifications
 - **Asks** targeted clarifying questions to capture context the CV alone cannot provide
 - **Generates** a tailored resume and/or cover letter as downloadable Word documents
-- **Accepts feedback** on content and visual structure and revises documents accordingly
+- **Offers four resume styles** — Classic, Modern, Bold, and Academic
+- **Offers four cover letter tones** — Professional, Conversational, Confident, and Mission-Driven
+- **Accepts feedback** and revises documents based on specific user requests
+- **Allows style and tone changes** after generation without restarting the workflow
 - **Evaluates** documents using a Smart Evaluation Tool powered by model-driven
   tool calling — Claude autonomously decides which evaluation tools to invoke
-  based on the documents provided, rather than following a hardcoded sequence
-- **Repeats** the revision cycle until you are satisfied with the output
+- **Scores ATS compatibility** — estimates how well a resume would perform
+  against Applicant Tracking Systems used by employers
+- **Generates interview preparation guides** — likely questions, talking points,
+  and suggested questions to ask the interviewer
+- **Tracks session history** — all documents generated in a session are
+  accessible for download without losing previous versions
+- **Supports back navigation** on the questions page with answer preservation
 
 ## Agentic Tool Use
 
@@ -41,26 +49,52 @@ is making the decisions.
 
 ## How to Use
 
-### Step 1 — Upload and Input
-1. Upload your CV (PDF or Word format)
-2. Paste the job posting or job description into the text box
-3. Select whether you want a Resume, Cover Letter, or both using the checkboxes
+### Path 1 — Build My Documents
 
-### Step 2 — Answer Clarifying Questions
-1. The AI will ask 3-5 targeted questions based on your CV and the job posting
-2. Answer each question in the text box provided
-3. Click Submit when you are done
+**Step 1 — Upload and Input**
+1. Upload your CV or resume (PDF or Word) or paste as text
+2. Optionally upload an existing cover letter for tone and style reference
+3. Paste the full job posting into the text box
+4. Click **Build My Documents**
 
-### Step 3 — Review and Give Feedback
-1. Review the generated draft document(s)
-2. Type any feedback on content or visual structure in the feedback box
-3. Click Revise to apply your feedback
-4. Repeat until you are satisfied
+**Step 2 — Choose Style and Tone**
+1. Select what you want to generate — Resume, Cover Letter, or both
+2. Choose a resume style: Classic, Modern, Bold, or Academic
+3. Choose a cover letter tone: Professional, Conversational, Confident, or Mission-Driven
+4. Click **Next Step →**
 
-### Step 4 — Download
-1. Click the Download button to save your Word document(s)
-2. Open in Microsoft Word or Google Docs for any final edits
+**Step 3 — Answer Clarifying Questions**
+1. Answer each question to help tailor your documents
+2. Use **← Back** to revisit and edit previous answers at any time
+3. Click **Generate Documents** when all questions are answered
 
+**Step 4 — Review and Revise**
+1. Review your documents in the **Your Documents & Download** tab
+2. Use the feedback boxes to request specific changes and click **Revise**
+3. Change your resume style or cover letter tone at any time using the expanders
+4. Use the **Smart Evaluation Tool** tab for scored feedback and ATS compatibility
+5. Use the **Interview Prep** tab to generate interview questions and talking points
+6. Access all documents generated this session in the **This Session** tab
+
+**Step 5 — Download**
+1. Click **Build Resume for Download** or **Build Cover Letter for Download**
+2. Click the download button to save your Word document
+3. Open in Microsoft Word or Google Docs for any final edits
+
+---
+
+### Path 2 — Evaluate My Documents
+
+**Step 1 — Upload and Input**
+1. Upload your existing resume and/or cover letter (PDF or Word) or paste as text
+2. Paste the full job posting into the text box
+3. Click **Evaluate My Documents**
+
+**Step 2 — Review Your Results**
+1. Review your **Smart Evaluation Report** with scores across five dimensions
+   and an ATS compatibility score
+2. Use the **Interview Prep** tab to generate interview preparation materials
+3. Click **Switch to Generate New Documents** to create improved versions
 ---
 
 ## Setup Instructions
