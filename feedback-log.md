@@ -280,3 +280,65 @@
 - Ready for final testing and deployment
 
 ---
+
+## Session 10 — Back Button and Evaluation Fix
+
+**Date:** 2026-06-20
+
+**Changes applied:**
+
+**Back button — polished version**
+- Added ← Back button to the left of Next → on all questions after the first
+- Added Edit buttons inside the "Your answers so far" expander
+- Going back or editing now preserves ALL subsequent answers
+- When navigating to a question that already has a saved answer, the text
+  area is pre-populated with the existing answer
+- Fixed issue where clicking Next after editing cleared the next question's
+  text area even though a saved answer existed
+
+**CV-only evaluation fix**
+- Fixed warning message that incorrectly required both a CV and cover letter
+  for Path 2 evaluation
+- Updated warning to clarify that a CV, resume, OR cover letter is sufficient
+
+---
+
+## Session 10 — New Features and UI Polish
+
+**Date:** 2026-06-20
+
+**New features added:**
+- Cover letter tone selector (Professional, Conversational, Confident,
+  Mission-Driven) on Style page — only shows when Cover Letter is checked
+- Resume style changeable after generation via expander on Review page
+- Cover letter tone changeable after generation with regenerate button
+- Both style and tone changes now save to session history
+- Smart Evaluation Tool now includes ATS compatibility score as a third
+  model-callable tool (calculate_ats_score)
+- Interview Prep tab added to both Path 1 and Path 2
+- This Session tab shows all documents generated in current session
+  with download buttons — history preserved across Start Over clicks
+- Collapsible How to Use instructions at top of homepage
+- Checkboxes moved to top of Style page — style/tone selectors only
+  appear for selected document types
+
+**UI improvements:**
+- Page width increased to 100% for full-width layout
+- Homepage section cards with blue borders for CV, Cover Letter,
+  and Job Posting sections
+- Emojis removed from all UI elements for more professional appearance
+- Instruction box removed from homepage since How to Use expander
+  covers the same information
+- Getting Started header added above How to Use expander
+- Tone description text darkened for readability
+
+**Testing completed:**
+- All 15 tests passed across Path 1 and Path 2
+- Back button confirmed working with answer preservation
+- Session history confirmed persisting across Start Over
+- ATS score confirmed working in Smart Evaluation
+- Interview Prep confirmed working in both paths
+- All four download styles confirmed working
+- CV-only evaluation confirmed working without cover letter
+
+---

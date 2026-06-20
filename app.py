@@ -20,7 +20,8 @@ from agents import (
     review_document,
     review_document_no_visual,
     smart_evaluate,
-    revise_document
+    revise_document,
+    generate_interview_prep
 )
 from document_builder import (
     build_resume_document,
@@ -36,36 +37,64 @@ st.set_page_config(
 if "session_count" not in st.session_state:
     st.session_state["session_count"] = 0
 
+if "session_history" not in st.session_state:
+    st.session_state["session_history"] = []
+
 st.markdown("""
     <style>
     html, body, [class*="css"] { font-family: 'Inter', 'Segoe UI', sans-serif; }
-    .block-container { padding-top: 0rem !important; max-width: 900px !important; }
+    .block-container {
+        padding-top: 0rem !important;
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
     textarea { border: 2px solid #0065A4 !important; border-radius: 6px !important; }
     div[data-testid="stTextArea"] textarea {
         border: 2px solid #0065A4 !important;
         border-radius: 6px !important;
         background-color: #f9f9f9 !important;
     }
-    button[kind="primary"] {
+    div[data-testid="stVerticalBlock"] button[kind="primary"] {
         background-color: #0065A4 !important;
         border-color: #0065A4 !important;
         color: white !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
     }
-    button[kind="primary"]:hover { background-color: #004f82 !important; }
-    button[kind="secondary"] {
+    div[data-testid="stVerticalBlock"] button[kind="primary"]:hover { background-color: #004f82 !important; }
+    div[data-testid="stVerticalBlock"] button[kind="secondary"] {
         background-color: #f0f7ff !important;
         border: 2px solid #0065A4 !important;
         color: #0065A4 !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
     }
-    button[kind="secondary"]:hover { background-color: #dceeff !important; }
+    div[data-testid="stVerticalBlock"] button[kind="secondary"]:hover { background-color: #dceeff !important; }
     h2 { color: #0065A4 !important; font-size: 1.3rem !important; margin-top: 1.5rem !important; margin-bottom: 0.5rem !important; }
     h3 { font-size: 1.05rem !important; margin-top: 1rem !important; margin-bottom: 0.3rem !important; }
     div[data-testid="stVerticalBlock"] > div { padding-top: 0.2rem !important; padding-bottom: 0.2rem !important; }
-    div[data-testid="stTabs"] button { font-size: 1.1rem !important; font-weight: 700 !important; padding: 12px 28px !important; }
+    [data-testid="stTabs"] [role="tab"] {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        color: #222 !important;
+        padding: 10px 24px !important;
+    }
+    [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: #0065A4 !important;
+    }
+    [data-testid="stTabs"] [role="tab"]:hover {
+        color: #0065A4 !important;
+    }
+    .section-header {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #0065A4 !important;
+        padding: 10px 16px 6px 16px !important;
+        margin: 0 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -101,17 +130,73 @@ if st.session_state.get("path") is None:
         </div>
     """, unsafe_allow_html=True)
 
+    # ── Collapsible Instructions ──
     st.markdown("""
-        <div style="background-color: #f0f7ff; border-left: 4px solid #0065A4;
-            border-radius: 6px; padding: 12px 16px; margin-bottom: 16px;
-            font-size: 0.95rem; color: #333;">
-            Upload your CV or resume and paste a job posting, then choose
-            whether to <strong>generate new documents</strong> or
-            <strong>evaluate what you already have</strong>.
+        <p style="font-size: 1.15rem; font-weight: 700; color: #0065A4;
+            margin-bottom: 4px;">Getting Started</p>
+    """, unsafe_allow_html=True)
+    with st.expander("How to Use This Tool — click to expand", expanded=False):
+        st.markdown("""
+        ### Welcome to Resume & Cover Letter Tailor
+
+        This tool helps you create tailored, professional application documents
+        in minutes. Here's how it works:
+
+        ---
+
+        **Path 1 — Build My Documents**
+        Use this when you want to generate a new resume and/or cover letter
+        tailored to a specific job posting.
+
+        1. **Upload your CV or Resume** — PDF or Word format, or paste as text
+        2. **Upload an existing cover letter** (optional) — used as tone/style reference
+        3. **Paste the job posting** — copy the full job description
+        4. Click **Build My Documents**
+        5. **Choose a style** for your resume (Classic, Modern, Bold, or Academic)
+        6. **Choose a tone** for your cover letter (Professional, Conversational,
+           Confident, or Mission-Driven)
+        7. **Answer a few questions** to help tailor your documents
+        8. **Review your documents** — request revisions using the feedback boxes
+        9. **Download** your polished Word documents
+
+        ---
+
+        **Path 2 — Evaluate My Documents**
+        Use this when you already have a resume and/or cover letter and want
+        scored feedback on how well they match a job posting.
+
+        1. **Upload your CV or Resume** and/or **cover letter**
+        2. **Paste the job posting**
+        3. Click **Evaluate My Documents**
+        4. Review your **Smart Evaluation Report** with scores across five dimensions
+
+        ---
+
+        **Tips for Best Results**
+        - Paste the complete job description, not just the title
+        - Answer the clarifying questions thoughtfully — they significantly
+          improve the quality of your documents
+        - Use the feedback boxes to request specific changes before downloading
+        - Try the **Smart Evaluation Tool** after generating to get scored feedback
+        - Use the **Interview Prep** tab to prepare for your interview
+
+        ---
+
+        **Note:** The app may take 20-60 seconds to process requests.
+        Documents generated in this session are available in the
+        **This Session** tab on the Review page.
+        """)
+
+    # ── CV Section Card ──
+    st.markdown("""
+        <div style="border: 1.5px solid #c8dff5; border-radius: 10px;
+            padding: 20px 24px 12px 24px; margin-bottom: 16px;
+            background-color: #fafcff;">
+            <p style="font-size: 1.05rem; font-weight: 700; color: #0065A4;
+                margin: 0 0 12px 0;">Your CV or Resume</p>
         </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### Your CV or Resume")
     cv_input_method = st.radio(
         "How would you like to provide your CV or Resume?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
@@ -133,7 +218,18 @@ if st.session_state.get("path") is None:
             placeholder="Paste the full text of your CV or Resume here...",
             height=200, key=f"cv_paste_{sc}")
 
-    st.markdown("### Existing Cover Letter *(optional)*")
+    st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+
+    # ── Cover Letter Section Card ──
+    st.markdown("""
+        <div style="border: 1.5px solid #c8dff5; border-radius: 10px;
+            padding: 20px 24px 12px 24px; margin-bottom: 16px;
+            background-color: #fafcff;">
+            <p style="font-size: 1.05rem; font-weight: 700; color: #0065A4;
+                margin: 0 0 12px 0;">Existing Cover Letter <span style="font-weight: 400; font-size: 0.9rem; color: #888;">(optional)</span></p>
+        </div>
+    """, unsafe_allow_html=True)
+
     cl_input_method = st.radio(
         "How would you like to provide your cover letter?",
         ["Upload a file (PDF or Word)", "Paste as text", "Skip"],
@@ -155,11 +251,25 @@ if st.session_state.get("path") is None:
             placeholder="Paste the full text of your cover letter here...",
             height=150, key=f"cl_paste_home_{sc}")
 
-    st.markdown("### Job Posting")
+    st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+
+    # ── Job Posting Section Card ──
+    st.markdown("""
+        <div style="border: 1.5px solid #c8dff5; border-radius: 10px;
+            padding: 20px 24px 12px 24px; margin-bottom: 16px;
+            background-color: #fafcff;">
+            <p style="font-size: 1.05rem; font-weight: 700; color: #0065A4;
+                margin: 0 0 12px 0;">Job Posting</p>
+        </div>
+    """, unsafe_allow_html=True)
+
     job_posting = st.text_area("Paste the job posting here:",
         placeholder="Copy and paste the full job description here...",
         height=200, key=f"job_posting_input_{sc}")
 
+    st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+
+    # ── Path Selection ──
     st.markdown("### Choose Your Path")
     col_a, col_b = st.columns(2)
 
@@ -234,9 +344,11 @@ elif st.session_state.get("path") == "generate":
             </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("## Choose a Document Style")
-        selected_style = st.radio("Select a style:",
-            ["Classic", "Modern", "Bold", "Academic"], horizontal=True, index=1)
+        st.markdown("## Choose Your Style and Tone")
+
+        st.markdown("### What would you like to generate?")
+        generate_resume = st.checkbox("Resume", value=True)
+        generate_cover_letter = st.checkbox("Cover Letter", value=True)
 
         style_previews = {
             "Classic": {"description": "Clean black and white formatting with Times New Roman font. Traditional and widely accepted.", "name_color": "#000000", "header_color": "#000000", "background": "#ffffff", "font": "Times New Roman"},
@@ -244,29 +356,52 @@ elif st.session_state.get("path") == "generate":
             "Bold": {"description": "Dark navy header backgrounds with white text. High contrast and visually striking.", "name_color": "#ffffff", "header_color": "#ffffff", "background": "#1F497D", "font": "Calibri"},
             "Academic": {"description": "Formal black text with underlined section headers and Georgia font. Best for academic roles.", "name_color": "#000000", "header_color": "#000000", "background": "#ffffff", "font": "Georgia"}
         }
-        preview = style_previews[selected_style]
-        st.markdown(f"""
-            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 8px 0; background-color: #fafafa;">
-                <p style="margin: 0 0 8px 0; color: #555; font-size: 0.85rem;"><strong>Preview — {selected_style}</strong></p>
-                <div style="background-color: white; border: 1px solid #eee; padding: 16px; font-family: {preview['font']}, serif;">
-                    <p style="font-size: 16px; font-weight: bold; color: {preview['name_color']}; background-color: {preview['background']}; padding: 4px 8px; margin: 0 0 6px 0;">Your Name</p>
-                    <p style="font-size: 10px; color: #555; margin: 0 0 10px 0;">your.email@example.com | (555) 123-4567 | City, State</p>
-                    <p style="font-size: 10px; font-weight: bold; color: {preview['header_color']}; background-color: {preview['background']}; padding: 2px 4px; margin: 0 0 4px 0; border-bottom: 1px solid #ccc;">PROFESSIONAL EXPERIENCE</p>
-                    <p style="font-size: 9px; color: #333; margin: 0;">• Led curriculum redesign increasing pass rates by 14%<br>• Managed cross-functional team of 6 designers</p>
-                </div>
-                <p style="margin: 8px 0 0 0; color: #666; font-size: 0.82rem;">{preview['description']}</p>
-            </div>
-        """, unsafe_allow_html=True)
 
-        st.markdown("### What would you like to generate?")
-        generate_resume = st.checkbox("Resume", value=True)
-        generate_cover_letter = st.checkbox("Cover Letter", value=True)
+        selected_style = "Modern"
+        if generate_resume:
+            st.markdown("### Resume Style")
+            selected_style = st.radio("Select a style:",
+                ["Classic", "Modern", "Bold", "Academic"], horizontal=True, index=1,
+                key="style_radio")
+            preview = style_previews[selected_style]
+            st.markdown(f"""
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 8px 0; background-color: #fafafa;">
+                    <p style="margin: 0 0 8px 0; color: #555; font-size: 0.85rem;"><strong>Resume Preview — {selected_style}</strong></p>
+                    <div style="background-color: white; border: 1px solid #eee; padding: 16px; font-family: {preview['font']}, serif;">
+                        <p style="font-size: 16px; font-weight: bold; color: {preview['name_color']}; background-color: {preview['background']}; padding: 4px 8px; margin: 0 0 6px 0;">Your Name</p>
+                        <p style="font-size: 10px; color: #555; margin: 0 0 10px 0;">your.email@example.com | (555) 123-4567 | City, State</p>
+                        <p style="font-size: 10px; font-weight: bold; color: {preview['header_color']}; background-color: {preview['background']}; padding: 2px 4px; margin: 0 0 4px 0; border-bottom: 1px solid #ccc;">PROFESSIONAL EXPERIENCE</p>
+                        <p style="font-size: 9px; color: #333; margin: 0;">• Led curriculum redesign increasing pass rates by 14%<br>• Managed cross-functional team of 6 designers</p>
+                    </div>
+                    <p style="margin: 8px 0 0 0; color: #444; font-size: 0.9rem;">{preview['description']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+
+        tone_descriptions = {
+            "Professional": "Formal, polished, and traditional. Works for most corporate and academic roles.",
+            "Conversational": "Warm and approachable. Reads like a confident person speaking directly.",
+            "Confident": "Bold and assertive. Emphasizes accomplishments and leadership.",
+            "Mission-Driven": "Passionate and values-focused. Ideal for nonprofit, education, and purpose-led organizations."
+        }
+
+        selected_tone = "Professional"
+        if generate_cover_letter:
+            st.markdown("### Cover Letter Tone")
+            selected_tone = st.radio("Select a tone:",
+                ["Professional", "Conversational", "Confident", "Mission-Driven"],
+                horizontal=True, index=0, key="tone_radio")
+            st.markdown(
+                f'<p style="color: #444; font-size: 0.9rem; margin-top: 4px;">' +
+                tone_descriptions[selected_tone] + '</p>',
+                unsafe_allow_html=True
+            )
 
         if st.button("Next Step →", type="primary"):
             if not generate_resume and not generate_cover_letter:
                 st.warning("Please select at least one document to generate.")
             else:
                 st.session_state["selected_style"] = selected_style
+                st.session_state["selected_tone"] = selected_tone
                 st.session_state["generate_resume"] = generate_resume
                 st.session_state["generate_cover_letter"] = generate_cover_letter
                 st.session_state["step"] = "questions"
@@ -290,7 +425,6 @@ elif st.session_state.get("path") == "generate":
         st.markdown("## A Few Quick Questions")
         st.caption("These help tailor your documents more precisely.")
 
-        # Initialize question state
         if "question_list" not in st.session_state:
             raw_questions = st.session_state.get("questions", "")
             question_list = []
@@ -311,7 +445,6 @@ elif st.session_state.get("path") == "generate":
             st.progress(current_index / total_questions)
             st.caption(f"Question {min(current_index + 1, total_questions)} of {total_questions}")
 
-        # Show previous answers with edit buttons
         if answers:
             with st.expander("Your answers so far — click Edit to revise"):
                 for i, (q, a) in enumerate(zip(question_list[:len(answers)], answers)):
@@ -321,29 +454,20 @@ elif st.session_state.get("path") == "generate":
                         st.write(f"_{a}_")
                     with col_btn:
                         if st.button("Edit", key=f"edit_btn_{i}"):
-                            # Clear the text area for this question so it re-renders with prefill
                             ta_key_to_clear = f"ta_q{i}"
                             if ta_key_to_clear in st.session_state:
                                 del st.session_state[ta_key_to_clear]
-                            # Keep ALL answers intact — just navigate to this question
                             st.session_state["current_question_index"] = i
                             st.session_state["editing_answer"] = a
                             st.rerun()
                     st.divider()
 
-        # Show current question
         if current_index < total_questions:
             current_question = question_list[current_index]
             st.markdown(f"### {current_question}")
 
-            # Check if we have a prefill value from editing
             editing_value = st.session_state.pop("editing_answer", "")
-
-            # Store the current text area value in session state
-            # Use a stable key based only on the question index
             ta_key = f"ta_q{current_index}"
-
-            # If we have an editing value, store it so the text area picks it up
             if editing_value and ta_key not in st.session_state:
                 st.session_state[ta_key] = editing_value
 
@@ -354,20 +478,16 @@ elif st.session_state.get("path") == "generate":
                 key=ta_key
             )
 
-            # Buttons: Back on left, Next on right
             col1, col2, col3 = st.columns([1, 1, 4])
-
             with col1:
                 if current_index > 0:
                     if st.button("← Back", key=f"back_{current_index}"):
                         prev_index = current_index - 1
                         current_answers = list(st.session_state.get("question_answers", []))
                         prev_answer = current_answers[prev_index] if prev_index < len(current_answers) else ""
-                        # Clear only the previous question's text area so it re-renders with prefill
                         prev_ta_key = f"ta_q{prev_index}"
                         if prev_ta_key in st.session_state:
                             del st.session_state[prev_ta_key]
-                        # Keep ALL answers intact — just navigate back
                         st.session_state["current_question_index"] = prev_index
                         st.session_state["editing_answer"] = prev_answer
                         st.rerun()
@@ -386,21 +506,16 @@ elif st.session_state.get("path") == "generate":
                         st.session_state["question_answers"] = new_answers
                         next_index = current_index + 1
                         st.session_state["current_question_index"] = next_index
-                        # If the next question already has a saved answer,
-                        # pre-populate its text area
                         next_ta_key = f"ta_q{next_index}"
-                        if next_index < len(new_answers) and \
-                                next_ta_key not in st.session_state:
+                        if next_index < len(new_answers) and next_ta_key not in st.session_state:
                             st.session_state["editing_answer"] = new_answers[next_index]
                         st.rerun()
 
-        # All questions answered
         if current_index >= total_questions and total_questions > 0:
             final_answers = list(st.session_state.get("question_answers", []))
             st.success("All questions answered!")
             user_answers = "\n\n".join([
-                f"Q: {q}\nA: {a}"
-                for q, a in zip(question_list, final_answers)
+                f"Q: {q}\nA: {a}" for q, a in zip(question_list, final_answers)
             ])
 
             if st.button("Generate Documents", type="primary"):
@@ -412,6 +527,7 @@ elif st.session_state.get("path") == "generate":
                         cv_content = st.session_state["cv_content"]
                         job_analysis = st.session_state["job_analysis"]
                         cl_context = st.session_state.get("cl_content", "")
+                        selected_tone = st.session_state.get("selected_tone", "Professional")
 
                         user_answers_with_context = (
                             user_answers + f"\n\nExisting cover letter for style/tone reference:\n{cl_context}"
@@ -425,7 +541,17 @@ elif st.session_state.get("path") == "generate":
                         if st.session_state.get("generate_cover_letter"):
                             resume_for_cl = st.session_state.get("resume_content", "No resume generated")
                             st.session_state["cover_letter_content"] = write_cover_letter(
-                                cv_content, job_analysis, user_answers_with_context, resume_for_cl)
+                                cv_content, job_analysis, user_answers_with_context,
+                                resume_for_cl, tone=selected_tone)
+
+                        history_entry = {
+                            "job_title": job_analysis[:80] + "..." if len(job_analysis) > 80 else job_analysis,
+                            "resume": st.session_state.get("resume_content", ""),
+                            "cover_letter": st.session_state.get("cover_letter_content", ""),
+                            "style": st.session_state.get("selected_style", "Modern"),
+                            "tone": selected_tone
+                        }
+                        st.session_state["session_history"].append(history_entry)
 
                         st.session_state["step"] = "review"
                         st.rerun()
@@ -452,19 +578,79 @@ elif st.session_state.get("path") == "generate":
             <div style="background-color: #f0f7ff; border-left: 4px solid #0065A4;
                 border-radius: 6px; padding: 10px 16px; margin-bottom: 12px;
                 font-size: 0.9rem; color: #333;">
-                Use the tabs below to switch between reviewing your documents
-                and running a Smart Evaluation.
+                Use the tabs below to review your documents, run a Smart Evaluation,
+                prepare for your interview, or access documents from this session.
             </div>
         """, unsafe_allow_html=True)
 
-        tab_docs, tab_eval = st.tabs([
-            "📋  Your Documents & Download",
-            "📊  Smart Evaluation Tool"
+        tab_docs, tab_eval, tab_interview, tab_history = st.tabs([
+            "Your Documents & Download",
+            "Smart Evaluation Tool",
+            "Interview Prep",
+            "This Session"
         ])
 
         with tab_docs:
             st.markdown("## Review Your Documents")
             st.caption("Review and request changes before downloading.")
+
+            if st.session_state.get("generate_resume") and "resume_content" in st.session_state:
+                with st.expander("Change Resume Style"):
+                    new_style = st.radio("Select a new style:",
+                        ["Classic", "Modern", "Bold", "Academic"],
+                        horizontal=True,
+                        index=["Classic", "Modern", "Bold", "Academic"].index(
+                            st.session_state.get("selected_style", "Modern")),
+                        key="style_change_radio")
+                    if st.button("Apply New Style", key="apply_style"):
+                        st.session_state["selected_style"] = new_style
+                        # Save updated version to session history
+                        history = st.session_state.get("session_history", [])
+                        history_entry = {
+                            "job_title": st.session_state.get("job_analysis", "")[:80],
+                            "resume": st.session_state.get("resume_content", ""),
+                            "cover_letter": st.session_state.get("cover_letter_content", ""),
+                            "style": new_style,
+                            "tone": st.session_state.get("selected_tone", "Professional")
+                        }
+                        history.append(history_entry)
+                        st.session_state["session_history"] = history
+                        st.success(f"Style updated to {new_style}! Download your resume to see the change.")
+
+            if st.session_state.get("generate_cover_letter") and "cover_letter_content" in st.session_state:
+                with st.expander("Change Cover Letter Tone and Regenerate"):
+                    new_tone = st.radio("Select a new tone:",
+                        ["Professional", "Conversational", "Confident", "Mission-Driven"],
+                        horizontal=True,
+                        index=["Professional", "Conversational", "Confident", "Mission-Driven"].index(
+                            st.session_state.get("selected_tone", "Professional")),
+                        key="tone_change_radio")
+                    if st.button("Regenerate with New Tone", key="apply_tone"):
+                        with st.spinner("Regenerating cover letter with new tone..."):
+                            try:
+                                new_cl = write_cover_letter(
+                                    st.session_state["cv_content"],
+                                    st.session_state["job_analysis"],
+                                    st.session_state.get("user_answers", ""),
+                                    st.session_state.get("resume_content", ""),
+                                    tone=new_tone)
+                                st.session_state["cover_letter_content"] = new_cl
+                                st.session_state["selected_tone"] = new_tone
+                                # Save updated version to session history
+                                history = st.session_state.get("session_history", [])
+                                history_entry = {
+                                    "job_title": st.session_state.get("job_analysis", "")[:80],
+                                    "resume": st.session_state.get("resume_content", ""),
+                                    "cover_letter": new_cl,
+                                    "style": st.session_state.get("selected_style", "Modern"),
+                                    "tone": new_tone
+                                }
+                                history.append(history_entry)
+                                st.session_state["session_history"] = history
+                                st.success(f"Cover letter regenerated with {new_tone} tone!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Something went wrong: {e}")
 
             if st.session_state.get("generate_resume") and "resume_content" in st.session_state:
                 st.markdown("### Your Tailored Resume")
@@ -572,8 +758,10 @@ elif st.session_state.get("path") == "generate":
             st.divider()
             if st.button("Start Over", key="start_over_p1"):
                 count = st.session_state.get("session_count", 0) + 1
+                history = st.session_state.get("session_history", [])
                 st.session_state.clear()
                 st.session_state["session_count"] = count
+                st.session_state["session_history"] = history
                 st.rerun()
 
         with tab_eval:
@@ -583,7 +771,8 @@ elif st.session_state.get("path") == "generate":
                     <span style="color: #888; font-size: 0.85rem; font-weight: 400;"> (optional)</span>
                 </div>
                 <p style="color: #555; font-size: 0.9rem; margin-top: 0;">
-                    Claude will analyze your documents and decide how to evaluate them based on what you generated.
+                    Claude will analyze your documents and decide how to evaluate them,
+                    including an ATS compatibility score for your resume.
                 </p>
             """, unsafe_allow_html=True)
 
@@ -609,6 +798,93 @@ elif st.session_state.get("path") == "generate":
                 """, unsafe_allow_html=True)
                 st.markdown(st.session_state["smart_evaluation"])
 
+        with tab_interview:
+            st.markdown("""
+                <div style="margin-bottom: 8px; margin-top: 12px;">
+                    <span style="color: #0065A4; font-size: 1.3rem; font-weight: 700;">Interview Preparation</span>
+                </div>
+                <p style="color: #555; font-size: 0.9rem; margin-top: 0;">
+                    Get likely interview questions, suggested talking points, and
+                    questions to ask the interviewer — tailored to your documents
+                    and the job posting.
+                </p>
+            """, unsafe_allow_html=True)
+
+            if st.button("Generate Interview Prep Guide", type="primary"):
+                with st.spinner("Preparing your interview guide... this may take 30-60 seconds."):
+                    try:
+                        resume_content = st.session_state.get("resume_content", "") \
+                            if st.session_state.get("generate_resume") else ""
+                        cover_letter_content = st.session_state.get("cover_letter_content", "") \
+                            if st.session_state.get("generate_cover_letter") else ""
+                        interview_guide = generate_interview_prep(
+                            resume_content,
+                            st.session_state["job_analysis"],
+                            cover_letter_content)
+                        st.session_state["interview_prep"] = interview_guide
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
+
+            if "interview_prep" in st.session_state:
+                st.markdown("""
+                    <div style="border-left: 4px solid #0065A4; border-radius: 6px;
+                        padding: 2px 16px; margin: 12px 0; background-color: #f0f7ff;">
+                    </div>
+                """, unsafe_allow_html=True)
+                st.markdown(st.session_state["interview_prep"])
+
+        with tab_history:
+            st.markdown("""
+                <div style="margin-bottom: 8px; margin-top: 12px;">
+                    <span style="color: #0065A4; font-size: 1.3rem; font-weight: 700;">This Session</span>
+                </div>
+                <p style="color: #555; font-size: 0.9rem; margin-top: 0;">
+                    All documents generated during this session are listed below.
+                    Download any version before closing the browser.
+                </p>
+            """, unsafe_allow_html=True)
+
+            history = st.session_state.get("session_history", [])
+            if not history:
+                st.info("No documents generated yet in this session.")
+            else:
+                for i, entry in enumerate(reversed(history)):
+                    idx = len(history) - 1 - i
+                    with st.expander(f"Version {idx + 1} — Style: {entry['style']} | Tone: {entry['tone']}"):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if entry.get("resume"):
+                                if st.button(f"Build Resume v{idx+1}", key=f"hist_resume_{idx}"):
+                                    with st.spinner("Building..."):
+                                        try:
+                                            output_path = os.path.join("outputs", "resumes", f"resume_v{idx+1}.docx")
+                                            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                                            build_resume_document(entry["resume"], output_path, style_name=entry["style"])
+                                            with open(output_path, "rb") as f:
+                                                st.download_button(
+                                                    label=f"Download Resume v{idx+1}", data=f,
+                                                    file_name=f"resume_v{idx+1}.docx",
+                                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                                    key=f"dl_resume_{idx}")
+                                        except Exception as e:
+                                            st.error(f"Something went wrong: {e}")
+                        with col2:
+                            if entry.get("cover_letter"):
+                                if st.button(f"Build Cover Letter v{idx+1}", key=f"hist_cl_{idx}"):
+                                    with st.spinner("Building..."):
+                                        try:
+                                            output_path = os.path.join("outputs", "cover-letters", f"cover_letter_v{idx+1}.docx")
+                                            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                                            build_cover_letter_document(entry["cover_letter"], output_path, style_name=entry["style"])
+                                            with open(output_path, "rb") as f:
+                                                st.download_button(
+                                                    label=f"Download Cover Letter v{idx+1}", data=f,
+                                                    file_name=f"cover_letter_v{idx+1}.docx",
+                                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                                    key=f"dl_cl_{idx}")
+                                        except Exception as e:
+                                            st.error(f"Something went wrong: {e}")
+
 # ─────────────────────────────────────────
 # PATH 2 — EVALUATE
 # ─────────────────────────────────────────
@@ -623,8 +899,7 @@ elif st.session_state.get("path") == "evaluate":
     if "path2_results" not in st.session_state:
         with st.spinner("Claude is deciding how to evaluate your documents... this may take 30-60 seconds."):
             try:
-                evaluation = smart_evaluate(
-                    cv_text, cl_text, st.session_state["job_analysis"])
+                evaluation = smart_evaluate(cv_text, cl_text, st.session_state["job_analysis"])
                 st.session_state["path2_results"] = evaluation
             except Exception as e:
                 st.error(f"Something went wrong: {e}")
@@ -632,18 +907,50 @@ elif st.session_state.get("path") == "evaluate":
                 st.error(traceback.format_exc())
 
     if "path2_results" in st.session_state:
-        st.markdown("""
-            <div style="margin-bottom: 8px; margin-top: 12px;">
-                <span style="color: #0065A4; font-size: 1.3rem; font-weight: 700;">Smart Evaluation Report</span>
-            </div>
-        """, unsafe_allow_html=True)
-        st.markdown(st.session_state["path2_results"])
+
+        tab_eval_p2, tab_interview_p2 = st.tabs([
+            "Smart Evaluation Report",
+            "Interview Prep"
+        ])
+
+        with tab_eval_p2:
+            st.markdown("""
+                <div style="margin-bottom: 8px; margin-top: 12px;">
+                    <span style="color: #0065A4; font-size: 1.3rem; font-weight: 700;">Smart Evaluation Report</span>
+                </div>
+            """, unsafe_allow_html=True)
+            st.markdown(st.session_state["path2_results"])
+
+        with tab_interview_p2:
+            st.markdown("""
+                <div style="margin-bottom: 8px; margin-top: 12px;">
+                    <span style="color: #0065A4; font-size: 1.3rem; font-weight: 700;">Interview Preparation</span>
+                </div>
+                <p style="color: #555; font-size: 0.9rem; margin-top: 0;">
+                    Get likely interview questions and talking points based on
+                    your documents and the job posting.
+                </p>
+            """, unsafe_allow_html=True)
+
+            if st.button("Generate Interview Prep Guide", type="primary", key="interview_p2"):
+                with st.spinner("Preparing your interview guide... this may take 30-60 seconds."):
+                    try:
+                        interview_guide = generate_interview_prep(
+                            cv_text, st.session_state["job_analysis"], cl_text)
+                        st.session_state["interview_prep_p2"] = interview_guide
+                    except Exception as e:
+                        st.error(f"Something went wrong: {e}")
+
+            if "interview_prep_p2" in st.session_state:
+                st.markdown(st.session_state["interview_prep_p2"])
 
         st.divider()
         if st.button("Switch to Generate New Documents", type="primary"):
             count = st.session_state.get("session_count", 0) + 1
+            history = st.session_state.get("session_history", [])
             st.session_state.clear()
             st.session_state["session_count"] = count
+            st.session_state["session_history"] = history
             st.session_state["path"] = "generate"
             st.session_state["step"] = "style"
             st.rerun()
@@ -651,6 +958,8 @@ elif st.session_state.get("path") == "evaluate":
     st.divider()
     if st.button("Start Over", key="start_over_p2"):
         count = st.session_state.get("session_count", 0) + 1
+        history = st.session_state.get("session_history", [])
         st.session_state.clear()
         st.session_state["session_count"] = count
+        st.session_state["session_history"] = history
         st.rerun()
