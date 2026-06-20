@@ -1,0 +1,14 @@
+evaluation type: <class 'str'>
+evaluation length: 6598
+evaluation content: ---
+
+# Resume & Cover Letter Evaluation Report
+
+## Candidate: Gabrielle Redfield
+## Target Role: Instructional Designer – The Home Depot
+
+---
+
+## Executive Summary
+
+Gabrielle, your application materials show a strong foundation in instructional design and adult learning theory, with a compelling personal brand around mindset transformation. Your **cover letter is excellent** and effectively translates your academic background into corporate L&D language while capturing The Home Depot's conversat
