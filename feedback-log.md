@@ -246,3 +246,37 @@
 - Path 2 evaluation page simplified to a single clean report view
 
 ---
+
+## Session 9 — Smart Evaluate Bug Fixes
+
+**Date:** 2026-06-20
+
+**Bugs found and fixed:**
+
+**Smart Evaluate not displaying results in Path 1**
+- The st.rerun() call after storing results was causing the tab to reset
+  to Tab 1, losing the evaluation display
+- Fixed by removing st.rerun() — Streamlit naturally displays results
+  on the same render cycle when stored in session state
+
+**Smart Evaluate only evaluating resume, not cover letter**
+- Claude was autonomously deciding to only call evaluate_resume_fit
+  even when both documents were available
+- Multiple approaches tried: explicit instructions, tool_choice="auto"
+- Fixed by using tool_choice={"type": "tool", "name": ...} to force
+  each tool call independently for each document
+- Both resume and cover letter now reliably evaluated in all cases
+
+**Summary call returning empty**
+- Final summary API call was using tool_choice which caused Claude to
+  try calling tools again instead of generating text
+- Fixed by using a separate Sonnet call with no tools for the summary
+  to guarantee text output
+
+**Current status:**
+- Smart Evaluate works correctly in both Path 1 and Path 2
+- Both resume and cover letter evaluated when both are provided
+- Overall summary generated after individual evaluations
+- Ready for final testing and deployment
+
+---
