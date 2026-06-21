@@ -372,3 +372,29 @@
 - App fully functional on Streamlit Cloud
 
 ---
+
+## Session 12 — Final Polish and Bug Fixes
+
+**Date:** 2026-06-21
+
+**Bug fixes:**
+- Fixed italic markdown rendering in Word document builder — *italic* text
+  was printing literally as asterisks instead of rendering as italic formatting
+  in downloaded Word documents. Fixed by updating parse_inline_markdown() to
+  handle both **bold** and *italic* markdown in the same pass.
+
+**UI improvements:**
+- Added Start Over button to Style page
+- Added Start Over button to Questions page
+- Added Start Over button to Smart Evaluation Tool tab
+- Added Start Over button to Interview Prep tab
+- Added Start Over button to This Session tab
+- Start Over now accessible from every page and tab in the app
+
+**Current status:**
+- All features fully tested and working on local and deployed versions
+- App live on Streamlit Cloud
+- All instructor feedback addressed
+- Ready for final submission review
+
+---
