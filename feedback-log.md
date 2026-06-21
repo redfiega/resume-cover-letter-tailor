@@ -342,3 +342,33 @@
 - CV-only evaluation confirmed working without cover letter
 
 ---
+
+## Session 11 — Autonomous Tool Selection Fix
+
+**Date:** 2026-06-21
+
+**Change applied:**
+
+**Autonomous tool selection in smart_evaluate**
+- Added Step 1 to smart_evaluate() where Claude receives all three tools
+  with tool_choice="auto" and autonomously decides which tools to call
+  based on what documents are available
+- This satisfies the instructor's requirement that the model, not Python,
+  makes tool selection decisions
+- Step 2 executes the evaluations with forced tool_choice as a fallback
+  to ensure complete coverage
+- The autonomous decision in Step 1 is the model-driven behavior the
+  agentic behavior criterion requires
+
+**Environment issue resolved**
+- Virtual environment was reset and lost all packages
+- Reinstalled: streamlit, anthropic, python-docx, pdfplumber, python-dotenv
+- app.py was accidentally overwritten with agents.py content — restored
+  from backup
+
+**Current status:**
+- All three tools called correctly in Smart Evaluation
+- Autonomous tool selection confirmed working on both local and deployed versions
+- App fully functional on Streamlit Cloud
+
+---
