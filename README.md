@@ -31,17 +31,20 @@ questions, and download polished, job-ready Word documents.
 ## Agentic Tool Use
 
 The Smart Evaluation Tool demonstrates genuine agentic behavior using the
-Anthropic tool use API. Two tools are defined with full JSON schemas and passed
+Anthropic tool use API. Three tools are defined with full JSON schemas and passed
 to Claude Opus via the `tools=` parameter:
 
 - **`evaluate_resume_fit`** — evaluates how well a resume matches a job posting
   across five dimensions
 - **`evaluate_cover_letter_fit`** — evaluates how well a cover letter matches
   a job posting across five dimensions
+- **`calculate_ats_score`** — calculates an ATS compatibility score by checking
+  keyword density, formatting, and section completeness
 
-Claude autonomously decides which tools to call based on what documents are
-available. Python executes the tool when Claude calls it and returns the results.
-Claude then synthesizes a final evaluation report from the tool outputs. This
+Claude autonomously selects which tools to invoke using `tool_choice="auto"` —
+the model examines the available documents and decides independently which
+evaluation tools are needed, without Python hardcoding the sequence. Python
+then executes the tools Claude selected and synthesizes a final report. This
 satisfies the model-driven tool selection requirement — the model, not Python,
 is making the decisions.
 
@@ -184,12 +187,12 @@ Word documents are the standard format for job applications. They are editable,
 widely accepted by applicant tracking systems, and easy to open on any device.
 
 **Why three different AI models?**
-- **Claude Opus** is used for job analysis, review, and final synthesis because
-  these tasks require the deepest reasoning
-- **Claude Sonnet** is used for writing and revision because these tasks require
-  creativity and content quality
-- **Claude Haiku** is used for parsing and classification because these are
-  structured tasks that do not require deep reasoning
+- **Claude Opus** is used for job analysis, document review, smart evaluation,
+  and interview preparation because these tasks require the deepest reasoning
+- **Claude Sonnet** is used for writing, revision, ATS scoring, and evaluation
+  summaries because these tasks require creativity and content quality
+- **Claude Haiku** is used for CV parsing because this is a structured task
+  that does not require deep reasoning
 
 ### Known Weaknesses
 - Visual formatting options are limited to what python-docx supports
