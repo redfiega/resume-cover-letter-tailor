@@ -116,13 +116,25 @@ def add_inline_text(paragraph, text: str, bold: bool, font_size: int,
 
 def parse_inline_markdown(paragraph, line: str, font_size: int,
                           font_name: str, color: RGBColor = None):
-    """Parse a line with inline **bold** markdown and add runs to paragraph."""
-    parts = line.split("**")
+    """Parse a line with inline **bold** and *italic* markdown."""
+    # First handle bold (**text**)
+    bold_parts = line.split("**")
     is_bold = False
-    for part in parts:
-        if part:
-            add_inline_text(paragraph, part, is_bold, font_size,
-                            font_name, color)
+    for bold_part in bold_parts:
+        if bold_part:
+            # Now handle italic (*text*) within each bold segment
+            italic_parts = bold_part.split("*")
+            is_italic = False
+            for italic_part in italic_parts:
+                if italic_part:
+                    run = paragraph.add_run(italic_part)
+                    run.bold = is_bold
+                    run.italic = is_italic
+                    run.font.size = Pt(font_size)
+                    run.font.name = font_name
+                    if color:
+                        run.font.color.rgb = color
+                is_italic = not is_italic
         is_bold = not is_bold
 
 
