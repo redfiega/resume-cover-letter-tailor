@@ -407,6 +407,15 @@ elif st.session_state.get("path") == "generate":
                 st.session_state["step"] = "questions"
                 st.rerun()
 
+        st.divider()
+        if st.button("Start Over", key="start_over_style"):
+            count = st.session_state.get("session_count", 0) + 1
+            history = st.session_state.get("session_history", [])
+            st.session_state.clear()
+            st.session_state["session_count"] = count
+            st.session_state["session_history"] = history
+            st.rerun()
+
     elif st.session_state.get("step") in ["questions", "generating"]:
         st.markdown("""
             <div style="display: flex; gap: 8px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
@@ -558,6 +567,15 @@ elif st.session_state.get("path") == "generate":
 
                     except Exception as e:
                         st.error(f"Something went wrong: {e}")
+
+        st.divider()
+        if st.button("Start Over", key="start_over_questions"):
+            count = st.session_state.get("session_count", 0) + 1
+            history = st.session_state.get("session_history", [])
+            st.session_state.clear()
+            st.session_state["session_count"] = count
+            st.session_state["session_history"] = history
+            st.rerun()
 
     if st.session_state.get("step") in ["review", "revision"]:
         st.markdown("""
@@ -798,6 +816,15 @@ elif st.session_state.get("path") == "generate":
                 """, unsafe_allow_html=True)
                 st.markdown(st.session_state["smart_evaluation"])
 
+            st.divider()
+            if st.button("Start Over", key="start_over_eval"):
+                count = st.session_state.get("session_count", 0) + 1
+                history = st.session_state.get("session_history", [])
+                st.session_state.clear()
+                st.session_state["session_count"] = count
+                st.session_state["session_history"] = history
+                st.rerun()
+
         with tab_interview:
             st.markdown("""
                 <div style="margin-bottom: 8px; margin-top: 12px;">
@@ -832,6 +859,15 @@ elif st.session_state.get("path") == "generate":
                     </div>
                 """, unsafe_allow_html=True)
                 st.markdown(st.session_state["interview_prep"])
+
+            st.divider()
+            if st.button("Start Over", key="start_over_interview"):
+                count = st.session_state.get("session_count", 0) + 1
+                history = st.session_state.get("session_history", [])
+                st.session_state.clear()
+                st.session_state["session_count"] = count
+                st.session_state["session_history"] = history
+                st.rerun()
 
         with tab_history:
             st.markdown("""
@@ -884,6 +920,15 @@ elif st.session_state.get("path") == "generate":
                                                     key=f"dl_cl_{idx}")
                                         except Exception as e:
                                             st.error(f"Something went wrong: {e}")
+
+            st.divider()
+            if st.button("Start Over", key="start_over_history"):
+                count = st.session_state.get("session_count", 0) + 1
+                history = st.session_state.get("session_history", [])
+                st.session_state.clear()
+                st.session_state["session_count"] = count
+                st.session_state["session_history"] = history
+                st.rerun()
 
 # ─────────────────────────────────────────
 # PATH 2 — EVALUATE
