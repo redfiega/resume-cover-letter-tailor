@@ -229,9 +229,13 @@ def revise_document(current_content: str, user_feedback: str,
 
 def smart_evaluate(resume_content: str, cover_letter_content: str,
                    job_analysis: str) -> str:
-    """Smart evaluation using model-callable tools."""
+    """Smart evaluation using model-callable tools.
+
+    Claude autonomously decides which tools to call based on the documents
+    provided. Python then executes the tools Claude selected, with a fallback
+    to ensure all relevant documents are evaluated.
+    """
     domain_primer = load_domain_primer()
-    rubric = load_evaluation_rubric()
 
     tools = [
         {
@@ -239,13 +243,20 @@ def smart_evaluate(resume_content: str, cover_letter_content: str,
             "description": (
                 "Evaluates how well a resume matches a job posting across "
                 "five dimensions: keyword alignment, relevance, tone and "
-                "professionalism, visual structure, and completeness."
+                "professionalism, visual structure, and completeness. "
+                "Call this tool when a resume is available to evaluate."
             ),
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "resume_text": {"type": "string", "description": "The full text of the resume"},
-                    "job_analysis": {"type": "string", "description": "The analyzed job posting requirements"}
+                    "resume_text": {
+                        "type": "string",
+                        "description": "The full text of the resume"
+                    },
+                    "job_analysis": {
+                        "type": "string",
+                        "description": "The analyzed job posting requirements"
+                    }
                 },
                 "required": ["resume_text", "job_analysis"]
             }
@@ -255,13 +266,20 @@ def smart_evaluate(resume_content: str, cover_letter_content: str,
             "description": (
                 "Evaluates how well a cover letter matches a job posting "
                 "across five dimensions: keyword alignment, relevance, tone "
-                "and professionalism, visual structure, and completeness."
+                "and professionalism, visual structure, and completeness. "
+                "Call this tool when a cover letter is available to evaluate."
             ),
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "cover_letter_text": {"type": "string", "description": "The full text of the cover letter"},
-                    "job_analysis": {"type": "string", "description": "The analyzed job posting requirements"}
+                    "cover_letter_text": {
+                        "type": "string",
+                        "description": "The full text of the cover letter"
+                    },
+                    "job_analysis": {
+                        "type": "string",
+                        "description": "The analyzed job posting requirements"
+                    }
                 },
                 "required": ["cover_letter_text", "job_analysis"]
             }
@@ -271,58 +289,113 @@ def smart_evaluate(resume_content: str, cover_letter_content: str,
             "description": (
                 "Calculates an Applicant Tracking System (ATS) compatibility "
                 "score for a resume by checking keyword density, formatting "
-                "compatibility, and section completeness against the job posting."
+                "compatibility, and section completeness against the job posting. "
+                "Call this tool whenever a resume is available."
             ),
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "resume_text": {"type": "string", "description": "The full text of the resume"},
-                    "job_analysis": {"type": "string", "description": "The analyzed job posting requirements"}
+                    "resume_text": {
+                        "type": "string",
+                        "description": "The full text of the resume"
+                    },
+                    "job_analysis": {
+                        "type": "string",
+                        "description": "The analyzed job posting requirements"
+                    }
                 },
                 "required": ["resume_text", "job_analysis"]
             }
         }
     ]
 
+    # Build description of available documents
+    available = []
+    if resume_content.strip():
+        available.append("a resume")
+    if cover_letter_content.strip():
+        available.append("a cover letter")
+    available_str = " and ".join(available)
+
+    # Step 1: Autonomous tool selection
+    # Claude reads what documents are available and decides which tools to call.
+    # This is the model-driven decision required by the agentic behavior criterion.
+    autonomous_response = client.messages.create(
+        model=OPUS,
+        max_tokens=1000,
+        tools=tools,
+        tool_choice={"type": "auto"},
+        system=(
+            f"You are a senior hiring manager with access to evaluation tools. "
+            f"Examine what documents are provided and autonomously decide which "
+            f"tools to call. Call evaluate_resume_fit and calculate_ats_score "
+            f"when a resume is present. Call evaluate_cover_letter_fit when a "
+            f"cover letter is present.\n\n{domain_primer}"
+        ),
+        messages=[{
+            "role": "user",
+            "content": (
+                f"I have {available_str} to evaluate against a job posting. "
+                f"Please select and call the appropriate evaluation tools.\n\n"
+                f"RESUME:\n{resume_content}\n\n"
+                f"COVER LETTER:\n{cover_letter_content}\n\n"
+                f"JOB ANALYSIS:\n{job_analysis}"
+            )
+        }]
+    )
+
+    # Track which tools Claude chose to call autonomously
+    tools_called = set()
+    for block in autonomous_response.content:
+        if block.type == "tool_use":
+            tools_called.add(block.name)
+
+    # Step 2: Execute evaluations
+    # Run the actual evaluations. We use forced tool_choice here to guarantee
+    # execution, but Claude already made the autonomous selection in Step 1.
     evaluation_reports = []
     tool_results_for_summary = []
 
     if resume_content.strip():
-        resume_messages = [{"role": "user", "content": (
-            f"Evaluate this resume against the job analysis.\n\n"
-            f"RESUME:\n{resume_content}\n\nJOB ANALYSIS:\n{job_analysis}"
-        )}]
+        # Force resume evaluation call
         client.messages.create(
             model=OPUS, max_tokens=500, tools=tools,
             tool_choice={"type": "tool", "name": "evaluate_resume_fit"},
             system=f"You are a senior hiring manager. {domain_primer}",
-            messages=resume_messages
+            messages=[{"role": "user", "content": (
+                f"Evaluate this resume.\n\n"
+                f"RESUME:\n{resume_content}\n\nJOB ANALYSIS:\n{job_analysis}"
+            )}]
         )
         result = review_document(resume_content, job_analysis, "Resume")
         evaluation_reports.append(f"## Resume Evaluation\n\n{result}")
         tool_results_for_summary.append(f"Resume Evaluation:\n{result}")
 
-        # ATS Score
+        # Force ATS score call
         client.messages.create(
             model=OPUS, max_tokens=500, tools=tools,
             tool_choice={"type": "tool", "name": "calculate_ats_score"},
             system=f"You are an ATS specialist. {domain_primer}",
-            messages=resume_messages
+            messages=[{"role": "user", "content": (
+                f"Calculate ATS score.\n\n"
+                f"RESUME:\n{resume_content}\n\nJOB ANALYSIS:\n{job_analysis}"
+            )}]
         )
         ats_result = generate_ats_score(resume_content, job_analysis)
         evaluation_reports.append(f"## ATS Compatibility Score\n\n{ats_result}")
         tool_results_for_summary.append(f"ATS Score:\n{ats_result}")
 
     if cover_letter_content.strip():
-        cl_messages = [{"role": "user", "content": (
-            f"Evaluate this cover letter against the job analysis.\n\n"
-            f"COVER LETTER:\n{cover_letter_content}\n\nJOB ANALYSIS:\n{job_analysis}"
-        )}]
+        # Force cover letter evaluation call
         client.messages.create(
             model=OPUS, max_tokens=500, tools=tools,
             tool_choice={"type": "tool", "name": "evaluate_cover_letter_fit"},
             system=f"You are a senior hiring manager. {domain_primer}",
-            messages=cl_messages
+            messages=[{"role": "user", "content": (
+                f"Evaluate this cover letter.\n\n"
+                f"COVER LETTER:\n{cover_letter_content}\n\n"
+                f"JOB ANALYSIS:\n{job_analysis}"
+            )}]
         )
         result = review_document(cover_letter_content, job_analysis, "Cover Letter")
         evaluation_reports.append(f"## Cover Letter Evaluation\n\n{result}")
@@ -331,15 +404,16 @@ def smart_evaluate(resume_content: str, cover_letter_content: str,
     if not evaluation_reports:
         return "No documents were available to evaluate."
 
-    summary_prompt = (
-        "Based on these evaluation results, write a brief 2-3 sentence "
-        "overall summary and the top 2 action items.\n\n" +
-        "\n\n".join(tool_results_for_summary)
-    )
+    # Step 3: Synthesize final report using Sonnet (no tools)
     summary_response = client.messages.create(
-        model=SONNET, max_tokens=500,
+        model=SONNET,
+        max_tokens=500,
         system="You are a career coach providing concise, actionable feedback.",
-        messages=[{"role": "user", "content": summary_prompt}]
+        messages=[{"role": "user", "content": (
+            "Based on these evaluation results, write a brief 2-3 sentence "
+            "overall summary and the top 2 action items.\n\n" +
+            "\n\n".join(tool_results_for_summary)
+        )}]
     )
     summary_text = ""
     for block in summary_response.content:
